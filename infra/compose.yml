@@ -1,0 +1,43 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-alertasegura}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-change-me-locally}
+      POSTGRES_DB: ${POSTGRES_DB:-alertasegura}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-alertasegura} -d ${POSTGRES_DB:-alertasegura}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  signer:
+    profiles: ["signer"]
+    build:
+      context: ..
+      dockerfile: infra/docker/signer.Dockerfile
+    user: "10001:10001"
+    read_only: true
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      SIGNER_PRIVATE_KEY_PATH: /run/secrets/signer-private-key.pem
+    volumes:
+      - type: bind
+        source: ${SIGNER_PRIVATE_KEY_FILE:-./secrets/signer-private-key.pem}
+        target: /run/secrets/signer-private-key.pem
+        read_only: true
+    networks:
+      - signer_internal
+
+volumes:
+  postgres_data:
+
+networks:
+  signer_internal:
+    internal: true

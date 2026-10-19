@@ -1,0 +1,24 @@
+# Dependencies and build output
+# Dependencias locales de cualquier workspace (nunca se versionan)
+node_modules/
+**/node_modules/
+.pnpm-store/
+**/.pnpm/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Local environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+infra/secrets/
+
+# Logs and editor files
+*.log
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

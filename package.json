@@ -1,0 +1,21 @@
+{
+  "name": "alertasegura",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@12.14.0",
+  "engines": {
+    "node": ">=24.11.0"
+  },
+  "scripts": {
+    "dev": "pnpm --parallel --filter @alertasegura/web --filter @alertasegura/api dev",
+    "dev:web": "pnpm --filter @alertasegura/web dev",
+    "dev:api": "pnpm --filter @alertasegura/api dev",
+    "db:up": "docker compose -f infra/compose.yml up -d postgres",
+    "db:down": "docker compose -f infra/compose.yml down",
+    "db:generate": "pnpm --filter @alertasegura/database db:generate",
+    "db:migrate": "pnpm --filter @alertasegura/database db:migrate",
+    "build": "pnpm -r --if-present build",
+    "test": "pnpm -r --if-present test",
+    "lint": "pnpm -r --if-present lint"
+  }
+}

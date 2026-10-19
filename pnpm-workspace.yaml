@@ -1,0 +1,12 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "tools/*"
+
+# Scripts de instalación necesarios y revisados para Vite, NestJS y Prisma.
+allowBuilds:
+  "@parcel/watcher": true
+  "@prisma/engines": true
+  esbuild: true
+  prisma: true
+  unrs-resolver: true
