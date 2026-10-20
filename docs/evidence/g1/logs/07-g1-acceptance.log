@@ -1,0 +1,46 @@
+API http://localhost:3000/api/v1 → health {"status":"ok","database":"up"}
+  ✔ [P01] GET /auth/csrf entrega token — esperado: 200; observado: 200
+  ✔ [P01] Login ADMIN con contraseña errónea — esperado: 401 INVALID_CREDENTIALS; observado: 401 INVALID_CREDENTIALS
+  ✔ [P01] Login con cuenta inexistente (mismo mensaje) — esperado: 401 INVALID_CREDENTIALS; observado: 401 INVALID_CREDENTIALS
+  ✔ [P01] Login ADMIN correcto — esperado: 200; observado: 200
+  ✔ [P01] Cookie de sesión HttpOnly + SameSite=Strict + Path=/ — esperado: HttpOnly; SameSite=Strict; Path=/; observado: as_session=<43 caracteres omitidos>; Max-Age=28800; Path=/; Expires=Tue, 20 Oct 2026 07:29:48 GMT; HttpOnly; SameSite=Strict
+  ✔ [P01] La respuesta no expone passwordHash — esperado: sin passwordHash; observado: ausente
+  ✔ [P01] GET /auth/me devuelve rol ADMIN y sus permisos — esperado: 200 ADMIN [users:read, issuers:provision, audit:read]; observado: 200 ADMIN [users:read,issuers:provision,audit:read]
+  ✔ [P01] ADMIN provisiona emisor A — esperado: 201 role ISSUER; observado: 201 ISSUER
+  ✔ [P01] ADMIN provisiona emisor B — esperado: 201 role ISSUER; observado: 201 ISSUER
+  ✔ [P01] Provisión con campo extra "role" se rechaza (mass assignment) — esperado: 400 VALIDATION_FAILED; observado: 400 VALIDATION_FAILED
+  ✔ [P01] Login AUDITOR correcto — esperado: 200; observado: 200
+  ✔ [P01] AUDITOR no puede provisionar emisores — esperado: 403 FORBIDDEN; observado: 403 FORBIDDEN
+  ✔ [P01] AUDITOR lee la auditoría — esperado: 200 con entradas; observado: 200 5 entradas
+  ✔ [P01] Login emisor A correcto — esperado: 200; observado: 200
+  ✔ [P01] Emisor A tiene rol ISSUER con alerts:publish — esperado: 200 ISSUER; observado: 200 ISSUER
+  ✔ [P01] Logout ADMIN — esperado: 204; observado: 204
+  ✔ [P01] La cookie anterior al logout ya no vale — esperado: 401 UNAUTHENTICATED; observado: 401 UNAUTHENTICATED
+  ✔ [P01] Token de sesión inventado se rechaza — esperado: 401 UNAUTHENTICATED; observado: 401 UNAUTHENTICATED
+  ✔ [P02a] Preparación: emisor A crea un borrador — esperado: 201; observado: 201
+  ✔ [P02a] Anónimo sin token CSRF publica — esperado: 401 UNAUTHENTICATED; observado: 401 UNAUTHENTICATED
+  ✔ [P02a] Anónimo con token CSRF válido publica — esperado: 401 UNAUTHENTICATED; observado: 401 UNAUTHENTICATED
+  ✔ [P02a] Anónimo lee el borrador — esperado: 401 UNAUTHENTICATED; observado: 401 UNAUTHENTICATED
+  ✔ [P02b] AUDITOR publica — esperado: 403 FORBIDDEN; observado: 403 FORBIDDEN
+  ✔ [P02b] ADMIN publica (separación de funciones) — esperado: 403 FORBIDDEN; observado: 403 FORBIDDEN
+  ✔ [P02b] Preparación: login emisor B — esperado: 200; observado: 200
+  ✔ [P02b] Emisor B publica borrador de A (propiedad) — esperado: 403 FORBIDDEN; observado: 403 FORBIDDEN
+  ✔ [P02b] Emisor B lee borrador de A (propiedad) — esperado: 403 FORBIDDEN; observado: 403 FORBIDDEN
+  ✔ [P02b] Emisor A publica sin X-CSRF-Token — esperado: 403 CSRF_INVALID; observado: 403 CSRF_INVALID
+  ✔ [P02b] Emisor A publica con el token CSRF de otra sesión — esperado: 403 CSRF_INVALID; observado: 403 CSRF_INVALID
+  ✔ [P02b] Emisor A publica con Origin ajeno — esperado: 403 CSRF_INVALID; observado: 403 CSRF_INVALID
+  ✔ [P02b] Control positivo: propietario autorizado (firma pendiente S2) — esperado: 501 PUBLICATION_NOT_IMPLEMENTED; observado: 501 PUBLICATION_NOT_IMPLEMENTED
+  ✔ [P02b] Auditoría registra PUBLICATION_DENIED y PUBLICATION_AUTHORIZED — esperado: ambas acciones; observado: PUBLICATION_AUTHORIZED, PUBLICATION_DENIED
+  … esperando 61s para vaciar la ventana de login por IP
+  ✔ [P09] Login por cuenta: 5 intentos 401 y el siguiente 429 — esperado: 5×401, 429; observado: 401,401,401,401,401,429
+  ✔ [P09] 429 incluye Retry-After — esperado: cabecera presente; observado: 900
+  ✔ [P09] Login por IP con cuentas rotadas: 429 en el intento 11 — esperado: 429 en 11; observado: 401,401,401,401,429 (primer 429 en 11)
+  ✔ [P09] Usuario autenticado: 429 tras 120 peticiones — esperado: 429 en la petición ≤ 121; observado: {"200":120,"429":1} (primer 429 en 121)
+  ✔ [P09] Otro usuario no queda bloqueado por el límite del emisor A — esperado: 200; observado: 200
+  ✔ [P09] Auditoría registra RATE_LIMITED — esperado: presente; observado: presente
+
+Resumen:
+  P01: APROBADO
+  P02a: APROBADO
+  P02b: APROBADO
+  P09: APROBADO

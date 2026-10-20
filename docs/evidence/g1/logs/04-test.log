@@ -1,0 +1,41 @@
+$ pnpm -r --if-present test
+Scope: 7 of 8 workspace projects
+apps/api pretest$ pnpm --filter @alertasegura/database build
+packages/verification test$ vitest run
+apps/api pretest: $ prisma generate && tsc -p tsconfig.json
+packages/verification test: 
+packages/verification test:  RUN  v5.0.5 C:/2026-2/Tecnico superior/alertasegura/packages/verification
+packages/verification test: 
+packages/verification test: 
+packages/verification test:  Test Files  3 passed (3)
+packages/verification test:       Tests  112 passed (112)
+packages/verification test:    Start at  19:34:53
+packages/verification test:    Duration  1.48s (tests 53%, transform 32%, import 13%, worker 3%)
+packages/verification test: 
+packages/verification test: Done
+apps/web test$ vitest run
+apps/web test: 
+apps/web test:  RUN  v5.0.5 C:/2026-2/Tecnico superior/alertasegura/apps/web
+apps/web test: 
+apps/api pretest: Loaded Prisma config from prisma.config.ts.
+apps/api pretest: 
+apps/api pretest: Prisma schema loaded from prisma\schema.prisma.
+apps/api pretest: 
+apps/api pretest: ✔ Generated Prisma Client (7.10.1) to .\src\generated in 318ms
+apps/api pretest: 
+apps/api pretest: Done
+apps/api test$ jest
+apps/api test: 
+apps/api test: Test Suites: 7 passed, 7 total
+apps/api test: Tests:       62 passed, 62 total
+apps/api test: Snapshots:   0 total
+apps/api test: Time:        44.133 s
+apps/api test: Ran all test suites.
+apps/api test: Done
+apps/web test: 
+apps/web test:  Test Files  5 passed (5)
+apps/web test:       Tests  35 passed (35)
+apps/web test:    Start at  19:34:55
+apps/web test:    Duration  54.91s (transform 30%, setup 24%, tests 18%, environment 17%, import 11%, worker 1%)
+apps/web test: 
+apps/web test: Done

@@ -1,0 +1,9 @@
+  ✔ Vite sirve la PWA — index.html con #root
+  ✔ GET /api/v1/health vía proxy — 200 {"status":"ok","database":"up"}
+  ✔ GET /auth/csrf vía proxy fija cookie as_csrf — 200
+  ✔ Login emisor 1 con Origin http://localhost:5173 — 200 ISSUER
+  ✔ GET /auth/me con la cookie de sesión — 200 emisor1@alertasegura.local
+  ✔ GET /drafts (borradores del seed) — 200 1 borradores
+  ✔ Logout — 204
+  ✔ Tras logout /auth/me → 401 — 401 UNAUTHENTICATED
+Integración: APROBADO

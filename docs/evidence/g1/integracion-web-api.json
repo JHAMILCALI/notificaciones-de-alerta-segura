@@ -1,0 +1,47 @@
+{
+  "at": "2026-10-19T23:32:04.683Z",
+  "via": "http://localhost:5173",
+  "steps": [
+    {
+      "step": "Vite sirve la PWA",
+      "result": "OK",
+      "observed": "index.html con #root"
+    },
+    {
+      "step": "GET /api/v1/health vía proxy",
+      "result": "OK",
+      "observed": "200 {\"status\":\"ok\",\"database\":\"up\"}"
+    },
+    {
+      "step": "GET /auth/csrf vía proxy fija cookie as_csrf",
+      "result": "OK",
+      "observed": "200"
+    },
+    {
+      "step": "Login emisor 1 con Origin http://localhost:5173",
+      "result": "OK",
+      "observed": "200 ISSUER"
+    },
+    {
+      "step": "GET /auth/me con la cookie de sesión",
+      "result": "OK",
+      "observed": "200 emisor1@alertasegura.local"
+    },
+    {
+      "step": "GET /drafts (borradores del seed)",
+      "result": "OK",
+      "observed": "200 1 borradores"
+    },
+    {
+      "step": "Logout",
+      "result": "OK",
+      "observed": "204"
+    },
+    {
+      "step": "Tras logout /auth/me → 401",
+      "result": "OK",
+      "observed": "401 UNAUTHENTICATED"
+    }
+  ],
+  "status": "APROBADO"
+}

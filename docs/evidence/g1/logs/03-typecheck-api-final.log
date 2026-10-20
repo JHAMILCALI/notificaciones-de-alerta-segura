@@ -1,0 +1,9 @@
+$ pnpm --filter @alertasegura/database build
+$ prisma generate && tsc -p tsconfig.json
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+✔ Generated Prisma Client (7.10.1) to .\src\generated in 97ms
+
+$ tsc --noEmit -p tsconfig.json

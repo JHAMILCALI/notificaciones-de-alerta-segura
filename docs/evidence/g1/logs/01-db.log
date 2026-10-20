@@ -1,0 +1,21 @@
+$ docker compose -f infra/compose.yml --env-file .env up -d --wait postgres
+ Container infra-postgres-1 Running 
+ Container infra-postgres-1 Waiting 
+ Container infra-postgres-1 Healthy 
+$ pnpm --filter @alertasegura/database db:deploy
+$ prisma migrate deploy
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+Datasource "db": PostgreSQL database "alertasegura", schema "public" at "localhost:5433"
+
+2 migrations found in prisma/migrations
+
+
+No pending migrations to apply.
+$ pnpm --filter @alertasegura/database db:seed
+$ tsx prisma/seed.ts
+[seed] ADMIN: ya existe (admin@alertasegura.local); no se modifica.
+[seed] AUDITOR: ya existe (auditor@alertasegura.local); no se modifica.
+[seed] ISSUER 1: ya existe (emisor1@alertasegura.local); no se modifica.
+[seed] ISSUER 2: ya existe (emisor2@alertasegura.local); no se modifica.

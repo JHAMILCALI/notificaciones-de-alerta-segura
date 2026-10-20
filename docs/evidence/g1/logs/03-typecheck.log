@@ -1,0 +1,26 @@
+$ pnpm -r --if-present typecheck
+packages/shared typecheck$ tsc -p tsconfig.json --noEmit
+packages/database typecheck$ prisma generate && tsc -p tsconfig.json --noEmit
+packages/shared typecheck: Done
+packages/verification typecheck$ tsc -p tsconfig.json
+packages/database typecheck: Loaded Prisma config from prisma.config.ts.
+packages/database typecheck: 
+packages/database typecheck: Prisma schema loaded from prisma\schema.prisma.
+packages/database typecheck: 
+packages/database typecheck: ✔ Generated Prisma Client (7.10.1) to .\src\generated in 214ms
+packages/database typecheck: 
+packages/verification typecheck: Done
+apps/web typecheck$ tsc -b
+packages/database typecheck: Done
+apps/api pretypecheck$ pnpm --filter @alertasegura/database build
+apps/api pretypecheck: $ prisma generate && tsc -p tsconfig.json
+apps/api pretypecheck: Loaded Prisma config from prisma.config.ts.
+apps/api pretypecheck: 
+apps/api pretypecheck: Prisma schema loaded from prisma\schema.prisma.
+apps/api pretypecheck: 
+apps/api pretypecheck: ✔ Generated Prisma Client (7.10.1) to .\src\generated in 1.37s
+apps/api pretypecheck: 
+apps/web typecheck: Done
+apps/api pretypecheck: Done
+apps/api typecheck$ tsc --noEmit -p tsconfig.json
+apps/api typecheck: Done

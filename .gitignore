@@ -18,6 +18,8 @@ infra/secrets/
 
 # Logs and editor files
 *.log
+# Salidas reales de comandos que forman parte de la evidencia de los gates
+!docs/evidence/**/*.log
 .idea/
 .vscode/
 .DS_Store

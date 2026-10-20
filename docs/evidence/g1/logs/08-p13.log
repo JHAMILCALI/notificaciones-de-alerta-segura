@@ -1,0 +1,122 @@
+
+ RUN  v5.0.5 C:/2026-2/Tecnico superior/alertasegura/packages/verification
+
+ ↓ test/base64url.test.ts > base64url > coincide con los vectores de RFC 4648 §10 (sin relleno)
+ ↓ test/base64url.test.ts > base64url > usa el alfabeto URL-safe (- y _ en lugar de + y /)
+ ↓ test/base64url.test.ts > base64url > ida y vuelta con bytes aleatorios de todas las longitudes 0..130
+ ↓ test/base64url.test.ts > base64url > rechaza relleno
+ ↓ test/base64url.test.ts > base64url > rechaza alfabeto estándar +
+ ↓ test/base64url.test.ts > base64url > rechaza espacio
+ ↓ test/base64url.test.ts > base64url > rechaza longitud imposible
+ ↓ test/base64url.test.ts > base64url > rechaza bits sobrantes no nulos (2 chars)
+ ↓ test/base64url.test.ts > base64url > rechaza bits sobrantes no nulos (3 chars)
+ ↓ test/base64url.test.ts > base64url > rechaza no ASCII
+ ↓ test/canonicalize.test.ts > RFC 8785 §3.2.2 - ejemplo de serialización > produce exactamente la salida del RFC
+ ↓ test/canonicalize.test.ts > RFC 8785 §3.2.3 - ordenación de propiedades > ordena por unidades de código UTF-16 (el emoji va antes que U+FB33)
+ ↓ test/canonicalize.test.ts > RFC 8785 §3.2.3 - ordenación de propiedades > no usa el orden de puntos de código: U+E000 va después de un emoji en UTF-16
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x0000000000000000 -> 0
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x8000000000000000 -> 0
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x0000000000000001 -> 5e-324
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x8000000000000001 -> -5e-324
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x7fefffffffffffff -> 1.7976931348623157e+308
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0xffefffffffffffff -> -1.7976931348623157e+308
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x4340000000000000 -> 9007199254740992
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0xc340000000000000 -> -9007199254740992
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x4430000000000000 -> 295147905179352830000
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x44b52d02c7e14af5 -> 9.999999999999997e+22
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x44b52d02c7e14af6 -> 1e+23
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x44b52d02c7e14af7 -> 1.0000000000000001e+23
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x444b1ae4d6e2ef4e -> 999999999999999700000
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x444b1ae4d6e2ef4f -> 999999999999999900000
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x444b1ae4d6e2ef50 -> 1e+21
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x3eb0c6f7a0b5ed8c -> 9.999999999999997e-7
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x3eb0c6f7a0b5ed8d -> 0.000001
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x41b3de4355555553 -> 333333333.3333332
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x41b3de4355555554 -> 333333333.33333325
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x41b3de4355555555 -> 333333333.3333333
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x41b3de4355555556 -> 333333333.3333334
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x41b3de4355555557 -> 333333333.33333343
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0xbecbf647612f3696 -> -0.0000033333333333333333
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x43143ff3c1cb0959 -> 1424953923781206.2
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x7fffffffffffffff (NaN) se rechaza
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0x7ff0000000000000 (+Infinity) se rechaza
+ ↓ test/canonicalize.test.ts > RFC 8785 Apéndice B - serialización de números > IEEE 0xfff0000000000000 (-Infinity) se rechaza
+ ↓ test/canonicalize.test.ts > Primitivos y escape de cadenas > serializa literales y estructuras vacías
+ ↓ test/canonicalize.test.ts > Primitivos y escape de cadenas > usa el escape mínimo: controles en \u00xx minúscula y el resto literal
+ ↓ test/canonicalize.test.ts > Primitivos y escape de cadenas > no incluye espacios y preserva el orden de arreglos
+ ↓ test/canonicalize.test.ts > Primitivos y escape de cadenas > es independiente del orden de inserción
+ ↓ test/canonicalize.test.ts > Primitivos y escape de cadenas > acepta objetos sin prototipo y la clave __proto__ como dato
+ ↓ test/canonicalize.test.ts > Primitivos y escape de cadenas > permite referencias compartidas que no son ciclos
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza undefined
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza undefined como miembro
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza función
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza BigInt
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza Symbol
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza clave Symbol
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza NaN
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza Infinity
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza -Infinity
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza Date
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza Map
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza instancia de clase
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza hueco en arreglo
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza surrogate alto suelto
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza surrogate bajo suelto
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza surrogate suelto en clave
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza par invertido
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza ciclos en objetos y arreglos
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > rechaza profundidad excesiva sin desbordar la pila
+ ↓ test/canonicalize.test.ts > Rechazo de valores no representables (I-JSON) > acepta un par de surrogates bien formado
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > el fixture contiene solo material público 15ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > el kid coincide con el SHA-256 de la SPKI DER (calculado con node:crypto y con Web Crypto) 71ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector alert-basic > la forma canónica se reproduce con canonicalize() 1ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector alert-basic > el SHA-256 se reproduce con Web Crypto 2ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector alert-basic > la firma tiene 64 bytes (P1363) y verifica con Web Crypto 39ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector alert-basic > verifica directamente con crypto.subtle sobre los bytes UTF-8 canónicos 4ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector alert-unicode > la forma canónica se reproduce con canonicalize() 1ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector alert-unicode > el SHA-256 se reproduce con Web Crypto 5ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector alert-unicode > la firma tiene 64 bytes (P1363) y verifica con Web Crypto 6ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector alert-unicode > verifica directamente con crypto.subtle sobre los bytes UTF-8 canónicos 5ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector numbers > la forma canónica se reproduce con canonicalize() 2ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector numbers > el SHA-256 se reproduce con Web Crypto 1ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector numbers > la firma tiene 64 bytes (P1363) y verifica con Web Crypto 10ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector numbers > verifica directamente con crypto.subtle sobre los bytes UTF-8 canónicos 1ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector nested > la forma canónica se reproduce con canonicalize() 0ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector nested > el SHA-256 se reproduce con Web Crypto 1ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector nested > la firma tiene 64 bytes (P1363) y verifica con Web Crypto 3ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector nested > verifica directamente con crypto.subtle sobre los bytes UTF-8 canónicos 1ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector rfc8785-sample > la forma canónica se reproduce con canonicalize() 0ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector rfc8785-sample > el SHA-256 se reproduce con Web Crypto 1ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector rfc8785-sample > la firma tiene 64 bytes (P1363) y verifica con Web Crypto 2ms
+ ✓ test/p13-interop.test.ts > P13 vectores generados en Node verificados con Web Crypto > vector rfc8785-sample > verifica directamente con crypto.subtle sobre los bytes UTF-8 canónicos 1ms
+ ✓ test/p13-interop.test.ts > P13 rechazo de contenido alterado > la línea base verifica 2ms
+ ✓ test/p13-interop.test.ts > P13 rechazo de contenido alterado > rechaza un campo con el valor cambiado 9ms
+ ✓ test/p13-interop.test.ts > P13 rechazo de contenido alterado > rechaza un campo numérico alterado en el último decimal 13ms
+ ✓ test/p13-interop.test.ts > P13 rechazo de contenido alterado > rechaza una clave añadida 10ms
+ ✓ test/p13-interop.test.ts > P13 rechazo de contenido alterado > rechaza una clave eliminada 19ms
+ ✓ test/p13-interop.test.ts > P13 rechazo de contenido alterado > rechaza un cambio de tipo (número por cadena) 13ms
+ ✓ test/p13-interop.test.ts > P13 rechazo de contenido alterado > rechaza cada uno de los 512 bits de la firma volteados 1191ms
+ ✓ test/p13-interop.test.ts > P13 rechazo de contenido alterado > rechaza la firma de otro documento 7ms
+ ✓ test/p13-interop.test.ts > P13 rechazo de contenido alterado > rechaza con otra clave pública (par efímero distinto) 9ms
+ ✓ test/p13-interop.test.ts > P13 rechazo de contenido alterado > devuelve false con firmas de longitud incorrecta o base64url inválido, nunca true 12ms
+ ✓ test/p13-interop.test.ts > P13 rechazo de contenido alterado > rechaza una firma DER en lugar de P1363 6ms
+ ✓ test/p13-interop.test.ts > P13 rechazo de contenido alterado > un payload no canonicalizable lanza CanonicalizationError 3ms
+ ✓ test/p13-interop.test.ts > P13 importación de claves públicas > importa como no extraíble y solo verify 3ms
+ ✓ test/p13-interop.test.ts > P13 importación de claves públicas > rechaza una JWK con material privado (d) 6ms
+ ✓ test/p13-interop.test.ts > P13 importación de claves públicas > rechaza JWK inválida: curva distinta 1ms
+ ✓ test/p13-interop.test.ts > P13 importación de claves públicas > rechaza JWK inválida: tipo distinto 0ms
+ ✓ test/p13-interop.test.ts > P13 importación de claves públicas > rechaza JWK inválida: sin y 1ms
+ ✓ test/p13-interop.test.ts > P13 importación de claves públicas > rechaza JWK inválida: coordenada corta 3ms
+ ✓ test/p13-interop.test.ts > P13 importación de claves públicas > rechaza JWK inválida: punto fuera de la curva 4ms
+ ✓ test/p13-interop.test.ts > P13 importación de claves públicas > rechaza JWK inválida: no es objeto 1ms
+ ✓ test/p13-interop.test.ts > P13 importación de claves públicas > rechaza JWK inválida: null 1ms
+ ✓ test/p13-interop.test.ts > P13 interoperabilidad bidireccional Node <-> Web Crypto > firma en Node (ieee-p1363) y verifica con crypto.subtle 14ms
+ ✓ test/p13-interop.test.ts > P13 interoperabilidad bidireccional Node <-> Web Crypto > firma con crypto.subtle y verifica con node:crypto (ieee-p1363) 20ms
+ ✓ test/p13-interop.test.ts > P13 interoperabilidad bidireccional Node <-> Web Crypto > el kid calculado con Web Crypto coincide con el de node:crypto 7ms
+
+ Test Files  1 passed | 2 skipped (3)
+      Tests  46 passed | 66 skipped (112)
+   Start at  19:02:38
+   Duration  3.64s (transform 54%, tests 34%, import 10%, worker 1%)
+
+JSON report written to C:/2026-2/Tecnico superior/alertasegura/docs/evidence/g1/P13-vitest.json

@@ -1,0 +1,58 @@
+{
+  "id": "P02a",
+  "title": "Usuario anónimo intenta publicar → 401",
+  "base": "http://localhost:3000/api/v1",
+  "startedAt": "2026-10-19T23:29:48.649Z",
+  "finishedAt": "2026-10-19T23:30:51.675Z",
+  "preparation": {
+    "draft": "borrador 29fe98ae-78f2-452a-aeec-4babda5154e9 creado por el emisor A"
+  },
+  "steps": [
+    {
+      "step": "Preparación: emisor A crea un borrador",
+      "expected": "201",
+      "observed": "201",
+      "result": "OK"
+    },
+    {
+      "step": "Anónimo sin token CSRF publica",
+      "expected": "401 UNAUTHENTICATED",
+      "observed": "401 UNAUTHENTICATED",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 401,
+          "code": "UNAUTHENTICATED",
+          "message": "Autenticación requerida"
+        }
+      }
+    },
+    {
+      "step": "Anónimo con token CSRF válido publica",
+      "expected": "401 UNAUTHENTICATED",
+      "observed": "401 UNAUTHENTICATED",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 401,
+          "code": "UNAUTHENTICATED",
+          "message": "Autenticación requerida"
+        }
+      }
+    },
+    {
+      "step": "Anónimo lee el borrador",
+      "expected": "401 UNAUTHENTICATED",
+      "observed": "401 UNAUTHENTICATED",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 401,
+          "code": "UNAUTHENTICATED",
+          "message": "Autenticación requerida"
+        }
+      }
+    }
+  ],
+  "status": "APROBADO"
+}
