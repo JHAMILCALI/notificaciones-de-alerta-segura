@@ -21,7 +21,10 @@
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
     "test:e2e": "pnpm --filter @alertasegura/api test:e2e",
-    "lint": "pnpm -r --if-present lint"
+    "lint": "pnpm -r --if-present lint",
+    "test:g1": "node tests/security/g1-acceptance.mjs",
+    "test:browser": "node tests/security/browser-walkthrough.mjs",
+    "test:cleanup": "node tests/security/cleanup-test-drafts.mjs"
   },
   "devDependencies": {
     "playwright-core": "1.56.1"

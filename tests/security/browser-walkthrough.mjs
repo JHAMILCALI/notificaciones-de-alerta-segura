@@ -10,6 +10,7 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright-core';
+import { BROWSER_DRAFT } from './test-data.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const env = Object.fromEntries(
@@ -81,9 +82,9 @@ try {
   // 5. Crear un borrador (POST con CSRF desde el navegador)
   await page.goto(WEB + '/panel/borradores');
   await page.locator('#new-draft-title').waitFor();
-  const title = `Prueba en navegador ${new Date().toISOString().slice(11, 19)}`;
+  const title = BROWSER_DRAFT.title(new Date().toISOString().slice(11, 19));
   await page.fill('#draft-title', title);
-  await page.fill('#draft-body', 'Borrador creado desde Chrome real para la evidencia de la semana 1.');
+  await page.fill('#draft-body', BROWSER_DRAFT.body);
   await page.selectOption('#draft-severity', 'WARNING');
   const [resp] = await Promise.all([
     page.waitForResponse((r) => r.url().endsWith('/api/v1/drafts') && r.request().method() === 'POST'),

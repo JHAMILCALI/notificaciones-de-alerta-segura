@@ -11,6 +11,7 @@ import { randomBytes } from 'node:crypto';
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { G1_DRAFT } from './test-data.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 const env = { ...loadEnv(join(root, '.env')), ...process.env };
@@ -194,6 +195,7 @@ async function main() {
   for (const [label, u] of [['A', issuerA], ['B', issuerB]]) {
     r = await admin.request('POST', '/admin/issuers', { body: { email: u.email, displayName: `Emisor ${label} G1`, password: u.password } });
     p01.check(`ADMIN provisiona emisor ${label}`, '201 role ISSUER', `${r.status} ${r.json?.user?.role}`, r.status === 201 && r.json.user.role === 'ISSUER');
+    u.id = r.json?.user?.id;
   }
   r = await admin.request('POST', '/admin/issuers', { body: { email: `x-${uniq()}@example.test`, displayName: 'Con rol', password: strongPassword(), role: 'ADMIN' } });
   p01.expectStatus('Provisión con campo extra "role" se rechaza (mass assignment)', r, 400, 'VALIDATION_FAILED');
@@ -205,6 +207,14 @@ async function main() {
   p01.expectStatus('AUDITOR no puede provisionar emisores', r, 403, 'FORBIDDEN');
   r = await auditor.request('GET', '/audit?limit=5');
   p01.check('AUDITOR lee la auditoría', '200 con entradas', `${r.status} ${r.json?.entries?.length ?? 0} entradas`, r.status === 200 && r.json.entries.length > 0);
+  r = await auditor.request('GET', '/audit?limit=50');
+  const provisioned = (r.json?.entries ?? []).filter((e) => e.action === 'ISSUER_PROVISIONED').map((e) => e.targetId);
+  p01.check(
+    'Alta de emisores auditada (ISSUER_PROVISIONED de A y B)',
+    'ambos emisores registrados',
+    [issuerA, issuerB].map((u) => (provisioned.includes(u.id) ? 'registrado' : 'ausente')).join(', '),
+    provisioned.includes(issuerA.id) && provisioned.includes(issuerB.id),
+  );
 
   const a = new Client('emisorA');
   r = await a.login(issuerA.email, issuerA.password);
@@ -223,7 +233,7 @@ async function main() {
   results.push(p01);
 
   // ---------- P02a ----------
-  r = await a.request('POST', '/drafts', { body: { title: `Alerta G1 ${uniq()}`, body: 'Contenido ficticio de prueba para G1.', severity: 'WARNING' } });
+  r = await a.request('POST', '/drafts', { body: { title: G1_DRAFT.title(uniq()), body: G1_DRAFT.body, severity: 'WARNING' } });
   const draftOk = r.status === 201;
   const draftId = r.json?.draft?.id;
   const p02a = new Evidence('P02a', 'Usuario anónimo intenta publicar → 401', {

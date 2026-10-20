@@ -43,8 +43,9 @@ pnpm build
 pnpm test                   # unitarias: api (Jest), web y verification (Vitest)
 pnpm test:e2e               # API contra PostgreSQL real (crea y borra su propia base)
 pnpm --filter @alertasegura/verification vectors   # regenera los vectores P13 con una clave efímera
-node tests/security/g1-acceptance.mjs              # aceptación G1 de caja negra contra la API en marcha
-node tests/security/browser-walkthrough.mjs        # recorrido en Google Chrome real (requiere Chrome instalado y pnpm dev)
+pnpm test:g1                # aceptación G1 de caja negra contra la API en marcha
+pnpm test:browser           # complementaria: recorrido en Google Chrome real (requiere Chrome instalado y pnpm dev)
+pnpm test:cleanup           # simulación de limpieza de borradores de prueba; `pnpm test:cleanup -- --apply` los borra
 ```
 
 Resultados y evidencias de la semana 1: [`docs/evidence/semana1-cumplimiento.md`](docs/evidence/semana1-cumplimiento.md).
