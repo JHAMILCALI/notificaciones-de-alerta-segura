@@ -79,7 +79,28 @@ y con PostgreSQL real, sin compartir código con la implementación.
   - JWK con `d`.
 - **Comprobación independiente de ATLAS:** documento nuevo con Unicode, emoji y `1e21`, firmado con `node:crypto` y verificado con el paquete compilado. Si se reordenan las claves sigue verificando, porque JCS produce la misma forma canónica. Si se altera un valor se rechaza.
 - **Observado:** 46/46 pruebas P13 en verde, más 66 pruebas adicionales de JCS (RFC 8785 §3.2.2, §3.2.3 y Apéndice B) y de base64url.
-- **Evidencia:** [`g1/P13-vitest.json`](g1/P13-vitest.json), [`logs/08-p13.log`](g1/logs/08-p13.log), [`logs/09-p13-atlas-independiente.log`](g1/logs/09-p13-atlas-independiente.log). Demostración visual en el navegador: `http://localhost:5173/laboratorio/criptografia`.
+- **En Google Chrome 155 real:** el laboratorio `/laboratorio/criptografia` verifica los 5 vectores firmados en Node con el `crypto.subtle` nativo del navegador (5 de 5) y rechaza el campo alterado, la clave añadida y el bit de firma invertido; al restaurar el original vuelve a verificar.
+- **Evidencia:** [`g1/P13-vitest.json`](g1/P13-vitest.json), [`logs/08-p13.log`](g1/logs/08-p13.log), [`logs/09-p13-atlas-independiente.log`](g1/logs/09-p13-atlas-independiente.log), capturas [`navegador/06`–`09`](g1/navegador/) y [`navegador/resultado.json`](g1/navegador/resultado.json).
+
+### Recorrido en navegador real (Chrome 155)
+
+`tests/security/browser-walkthrough.mjs` controla el Chrome instalado (headless, `playwright-core`) contra la PWA de Vite y la API real.
+17 de 17 comprobaciones aprobadas ([`navegador/resultado.json`](g1/navegador/resultado.json), [log](g1/logs/13-navegador-chrome.log)):
+
+| Comprobación | Observado | Captura |
+| --- | --- | --- |
+| `/panel` sin sesión redirige a `/login` | redirección | [02](g1/navegador/02-panel-sin-sesion-redirige.png) |
+| Contraseña errónea | «Correo o contraseña incorrectos.» y contraseña borrada | [03](g1/navegador/03-login-error-generico.png) |
+| Login del emisor 1 | panel con rol ISSUER y sus permisos | [04](g1/navegador/04-panel-emisor.png) |
+| Cookie en el navegador | `as_session` HttpOnly, SameSite=Strict, Path=/ | — |
+| Lo que ve JavaScript | `document.cookie` vacío; localStorage y sessionStorage vacíos | — |
+| Crear borrador desde la UI | `POST /drafts` 201 con `X-CSRF-Token` y aparece en la lista | [05](g1/navegador/05-borrador-creado.png) |
+| P13 en el navegador | 5/5 válidos; alteraciones rechazadas | [06](g1/navegador/06-lab-vectores-validos.png)–[09](g1/navegador/09-lab-bit-firma.png) |
+| Vista móvil 360 px | sin desbordamiento horizontal en laboratorio y panel | [10](g1/navegador/10-lab-movil-360.png), [11](g1/navegador/11-panel-movil-360.png) |
+| Logout | cookie eliminada y `/panel` vuelve a pedir login | [12](g1/navegador/12-logout.png) |
+| Consola | sin errores inesperados (solo los 401 que provoca la propia prueba) | — |
+
+La primera ejecución detectó un defecto real: el laboratorio se desbordaba 8 px a 360 px de ancho (rejilla `.kv` con `1fr` y el `kid` sin cortes). CIPHER lo corrigió y la segunda ejecución quedó en verde.
 
 ---
 
@@ -91,7 +112,7 @@ y con PostgreSQL real, sin compartir código con la implementación.
 | PostgreSQL en Docker | ✅ | `infra-postgres-1` healthy ([01](g1/logs/01-db.log)) |
 | Prisma aplica sus migraciones | ✅ | 2 migraciones aplicadas; `migrate deploy` sin pendientes; la e2e las aplica en una base nueva en cada ejecución |
 | NestJS inicia y conecta con la BD | ✅ | `GET /health` → `{"status":"ok","database":"up"}` ([06](g1/logs/06-api-server.log)) |
-| React inicia y consume la API | ✅ | Integración por el proxy de Vite ([`integracion-web-api.json`](g1/integracion-web-api.json)) |
+| React inicia y consume la API | ✅ | Integración por el proxy de Vite ([`integracion-web-api.json`](g1/integracion-web-api.json)) y recorrido en Chrome real ([`navegador/`](g1/navegador/)) |
 | Login | ✅ | P01 |
 | Sesiones seguras | ✅ | P01: HttpOnly, SameSite=Strict, rotación, revocación, caducidades, solo el hash en BD |
 | Roles y permisos | ✅ | P01, P02b |
@@ -128,6 +149,7 @@ y con PostgreSQL real, sin compartir código con la implementación.
 | `CSRF_SECRET` aceptaba el placeholder de `.env.example` | FORGE | Corregido y cubierto en `env.spec.ts` |
 | 3 pruebas de `apps/web` fallaban por timeout con `pnpm test` en paralelo | CIPHER | Corregido (timeouts y `user-event` sin retardo); 2 ejecuciones seguidas en verde |
 | Script de integración fallaba con 429 si se ejecutaba justo después de P09 | ATLAS | Corregido: respeta `Retry-After` y lo registra |
+| Laboratorio criptográfico desbordaba 8 px a 360 px (detectado en Chrome real) | CIPHER | Corregido en `styles.css` (`minmax(0, 1fr)` y `overflow-wrap: anywhere`) |
 
 Tras las correcciones se repitieron build, lint, typecheck, unitarias, e2e, aceptación G1 e integración contra la API reconstruida: todo en verde.
 
@@ -151,4 +173,5 @@ node tests/security/g1-acceptance.mjs             # P01, P02a, P02b, P09 → doc
 pnpm --filter @alertasegura/verification exec vitest run -t P13
 pnpm dev:web &                                    # PWA en :5173
 node tests/security/integration-web-proxy.mjs     # integración PWA ⇄ API por el proxy
+node tests/security/browser-walkthrough.mjs       # recorrido en Chrome real → docs/evidence/g1/navegador/
 ```

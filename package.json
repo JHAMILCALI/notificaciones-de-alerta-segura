@@ -22,5 +22,8 @@
     "test": "pnpm -r --if-present test",
     "test:e2e": "pnpm --filter @alertasegura/api test:e2e",
     "lint": "pnpm -r --if-present lint"
+  },
+  "devDependencies": {
+    "playwright-core": "1.56.1"
   }
 }
