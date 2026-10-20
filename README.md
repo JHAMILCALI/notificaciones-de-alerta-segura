@@ -14,6 +14,9 @@ Monorepo con React + Vite para la PWA, NestJS para la API, PostgreSQL con Prisma
 
 ## Levantar todo en local desde cero
 
+> **Guía detallada paso a paso:** [`docs/guia-inicio-local.md`](docs/guia-inicio-local.md). Explica qué se levanta primero
+> y por qué, cómo comprobar cada paso, la rutina del día a día y qué hacer si algo falla. Abajo, la versión resumida.
+
 Los comandos funcionan igual en PowerShell, Git Bash o una terminal de macOS/Linux, salvo donde se indica.
 
 ### 1. Clonar e instalar dependencias
