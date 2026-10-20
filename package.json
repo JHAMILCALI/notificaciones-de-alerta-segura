@@ -7,7 +7,7 @@
     "node": ">=24.11.0"
   },
   "scripts": {
-    "build:packages": "pnpm --filter @alertasegura/shared --filter @alertasegura/verification build",
+    "build:packages": "pnpm --filter @alertasegura/shared --filter @alertasegura/database --filter @alertasegura/verification build",
     "dev": "pnpm build:packages && pnpm --parallel --filter @alertasegura/web --filter @alertasegura/api dev",
     "dev:web": "pnpm --filter @alertasegura/web dev",
     "dev:api": "pnpm --filter @alertasegura/api dev",
