@@ -4,6 +4,11 @@ Cómo se conectan y se comportan las piezas del sistema. Están dibujados con **
 extensión *Markdown Preview Mermaid Support*) muestran como gráficos. Todos reflejan el código real de la rama
 `feat/semana-1`.
 
+> **Versión editable en Excalidraw:** [`diagramas/alertasegura-arquitectura.excalidraw`](diagramas/alertasegura-arquitectura.excalidraw)
+> (ábrelo en https://excalidraw.com con *Abrir* o arrastrándolo). Vista previa:
+>
+> ![Arquitectura de AlertaSegura](diagramas/alertasegura-arquitectura.png)
+
 | # | Diagrama | Tipo |
 | --- | --- | --- |
 | 1 | [Vista general: cómo se conecta todo](#1-vista-general-cómo-se-conecta-todo) | Componentes |
