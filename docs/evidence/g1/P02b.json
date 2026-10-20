@@ -2,10 +2,10 @@
   "id": "P02b",
   "title": "Usuario autenticado sin permisos intenta publicar → 403",
   "base": "http://localhost:3000/api/v1",
-  "startedAt": "2026-10-19T23:29:48.671Z",
-  "finishedAt": "2026-10-19T23:30:51.676Z",
+  "startedAt": "2026-10-20T03:21:16.159Z",
+  "finishedAt": "2026-10-20T03:22:18.508Z",
   "preparation": {
-    "draft": "borrador 29fe98ae-78f2-452a-aeec-4babda5154e9 del emisor A",
+    "draft": "borrador db8ba41f-88b5-4a93-8e65-5a6321b8f39a del emisor A",
     "actors": [
       "AUDITOR (sin alerts:publish)",
       "ADMIN (sin alerts:publish)",
@@ -48,8 +48,8 @@
       "detail": {
         "response": {
           "user": {
-            "id": "1812e118-0b2c-446c-91cd-0a5e91303ea6",
-            "email": "emisor-b-b153eb05@example.test",
+            "id": "833cbeaa-8739-4875-84be-beeb7ca0e8d2",
+            "email": "emisor-b-125fbeeb@example.test",
             "displayName": "Emisor B G1",
             "role": "ISSUER",
             "permissions": [
@@ -58,7 +58,7 @@
               "alerts:publish"
             ]
           },
-          "csrfToken": "Wyoyo2cRVu5iOZy8NwEMltmxfiSLWe0h.vbiE2Fe7_BcpBkC3iBg1R2SQeLB3Une_QZAuyn48Pto"
+          "csrfToken": "wuOoVljsiqAreJOxybeHMFR3JP1qK-du.mwjrw0BEQMh-xHrN6GTXobHLLDu8lW8U9yV87KKjqbk"
         }
       }
     },

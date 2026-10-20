@@ -2,8 +2,8 @@
   "id": "P09",
   "title": "Solicitudes excesivas → 429",
   "base": "http://localhost:3000/api/v1",
-  "startedAt": "2026-10-19T23:29:48.852Z",
-  "finishedAt": "2026-10-19T23:30:51.678Z",
+  "startedAt": "2026-10-20T03:21:16.293Z",
+  "finishedAt": "2026-10-20T03:22:18.509Z",
   "preparation": {
     "limits": {
       "loginPorCuenta": 5,
@@ -57,7 +57,7 @@
           "code": "RATE_LIMITED",
           "message": "Demasiadas solicitudes"
         },
-        "retryAfter": "59"
+        "retryAfter": "60"
       }
     },
     {

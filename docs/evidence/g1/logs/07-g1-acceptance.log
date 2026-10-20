@@ -3,7 +3,7 @@ API http://localhost:3000/api/v1 → health {"status":"ok","database":"up"}
   ✔ [P01] Login ADMIN con contraseña errónea — esperado: 401 INVALID_CREDENTIALS; observado: 401 INVALID_CREDENTIALS
   ✔ [P01] Login con cuenta inexistente (mismo mensaje) — esperado: 401 INVALID_CREDENTIALS; observado: 401 INVALID_CREDENTIALS
   ✔ [P01] Login ADMIN correcto — esperado: 200; observado: 200
-  ✔ [P01] Cookie de sesión HttpOnly + SameSite=Strict + Path=/ — esperado: HttpOnly; SameSite=Strict; Path=/; observado: as_session=<43 caracteres omitidos>; Max-Age=28800; Path=/; Expires=Tue, 20 Oct 2026 07:29:48 GMT; HttpOnly; SameSite=Strict
+  ✔ [P01] Cookie de sesión HttpOnly + SameSite=Strict + Path=/ — esperado: HttpOnly; SameSite=Strict; Path=/; observado: as_session=<43 caracteres omitidos>; Max-Age=28800; Path=/; Expires=Tue, 20 Oct 2026 11:21:15 GMT; HttpOnly; SameSite=Strict
   ✔ [P01] La respuesta no expone passwordHash — esperado: sin passwordHash; observado: ausente
   ✔ [P01] GET /auth/me devuelve rol ADMIN y sus permisos — esperado: 200 ADMIN [users:read, issuers:provision, audit:read]; observado: 200 ADMIN [users:read,issuers:provision,audit:read]
   ✔ [P01] ADMIN provisiona emisor A — esperado: 201 role ISSUER; observado: 201 ISSUER
@@ -12,6 +12,7 @@ API http://localhost:3000/api/v1 → health {"status":"ok","database":"up"}
   ✔ [P01] Login AUDITOR correcto — esperado: 200; observado: 200
   ✔ [P01] AUDITOR no puede provisionar emisores — esperado: 403 FORBIDDEN; observado: 403 FORBIDDEN
   ✔ [P01] AUDITOR lee la auditoría — esperado: 200 con entradas; observado: 200 5 entradas
+  ✔ [P01] Alta de emisores auditada (ISSUER_PROVISIONED de A y B) — esperado: ambos emisores registrados; observado: registrado, registrado
   ✔ [P01] Login emisor A correcto — esperado: 200; observado: 200
   ✔ [P01] Emisor A tiene rol ISSUER con alerts:publish — esperado: 200 ISSUER; observado: 200 ISSUER
   ✔ [P01] Logout ADMIN — esperado: 204; observado: 204

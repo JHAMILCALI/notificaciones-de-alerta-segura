@@ -2,8 +2,8 @@
   "id": "P01",
   "title": "Login seguro, sesiones y roles",
   "base": "http://localhost:3000/api/v1",
-  "startedAt": "2026-10-19T23:29:48.100Z",
-  "finishedAt": "2026-10-19T23:30:51.674Z",
+  "startedAt": "2026-10-20T03:21:15.836Z",
+  "finishedAt": "2026-10-20T03:22:18.505Z",
   "preparation": {
     "users": [
       "ADMIN del seed",
@@ -20,7 +20,7 @@
       "result": "OK",
       "detail": {
         "response": {
-          "csrfToken": "DoOt8UDltcqNpcxS9hnDV-sBQ9SZDpu6.ydK3JCZ1KpIDjTvs8Vef9f0TijG1rW24S--kOJaJMqU"
+          "csrfToken": "m8w5C_1mDbl_alq2HOsjG524TbnOwity.QsJY_dBplzi0glhPVDlc268LaRenSyruwXSbXhSTQDM"
         }
       }
     },
@@ -68,14 +68,14 @@
               "audit:read"
             ]
           },
-          "csrfToken": "fJ_f9TY8CKtzoRC4Cpl8jEHynR7311TO.xbggSZAtDPoUOqDbPD8xwzoyFgIzh-KVX9S4Bm9kp8w"
+          "csrfToken": "lfC7dELIVep6cBrxmYIJDnG-4ZG7UMIy.YfGpmzZFK8N0-zbKdHa3QPaEaKZq7fqDwFwsJIEtqNE"
         }
       }
     },
     {
       "step": "Cookie de sesión HttpOnly + SameSite=Strict + Path=/",
       "expected": "HttpOnly; SameSite=Strict; Path=/",
-      "observed": "as_session=<43 caracteres omitidos>; Max-Age=28800; Path=/; Expires=Tue, 20 Oct 2026 07:29:48 GMT; HttpOnly; SameSite=Strict",
+      "observed": "as_session=<43 caracteres omitidos>; Max-Age=28800; Path=/; Expires=Tue, 20 Oct 2026 11:21:15 GMT; HttpOnly; SameSite=Strict",
       "result": "OK"
     },
     {
@@ -137,7 +137,7 @@
               "audit:read"
             ]
           },
-          "csrfToken": "uFiI7z9buBEtFSOSyjX-GnMDOkHf0BBA.R2KIuY4i-BngVMuyjUVtyd1IXA4khmDwvx9e6kcQiPo"
+          "csrfToken": "n7kd6WzlEbQ-fJxrKT6GMVRgGq_S41jT.cMBNJyUh-mwylTTHfL1uwOluNYsBz5QneTMrQlgrOqQ"
         }
       }
     },
@@ -161,6 +161,12 @@
       "result": "OK"
     },
     {
+      "step": "Alta de emisores auditada (ISSUER_PROVISIONED de A y B)",
+      "expected": "ambos emisores registrados",
+      "observed": "registrado, registrado",
+      "result": "OK"
+    },
+    {
       "step": "Login emisor A correcto",
       "expected": "200",
       "observed": "200",
@@ -168,8 +174,8 @@
       "detail": {
         "response": {
           "user": {
-            "id": "b41e0b43-2872-4259-8562-eec1aa8a45e8",
-            "email": "emisor-a-92903da0@example.test",
+            "id": "77cf7fa7-c32c-451b-86ab-ae0aeae9c22f",
+            "email": "emisor-a-b013d3ef@example.test",
             "displayName": "Emisor A G1",
             "role": "ISSUER",
             "permissions": [
@@ -178,7 +184,7 @@
               "alerts:publish"
             ]
           },
-          "csrfToken": "gIprHPPFCS9gHfdP3eYB_pY1umarlOis.EJnSxDOmY5kMG8LSGyOHYyz0gmImYGgJxQCaQDLFADE"
+          "csrfToken": "gIWJv93tZ-LLs2QoJlfDL4cEOlFdLOH4.m7gu2TnzJNCQmStMT1PU-wBn1R_zx-T3msnfZd5pR5E"
         }
       }
     },
