@@ -160,3 +160,7 @@ apps/web test:               Tests   35 passed (35)   Duration 11.76s
 ```
 
 Antes la suite de web tardaba 10 a 45 s según la carga; ahora ronda 7 s sola y 12 s en paralelo con las demás.
+
+### Desbordamiento horizontal a 360 px en `/laboratorio/criptografia`
+
+Causa (diagnóstico de ATLAS en Chrome 155): `dl.kv` usaba `grid-template-columns: 1fr` (= `minmax(auto, 1fr)`), que no deja encoger la columna por debajo del min-content del `kid` (43 caracteres base64url sin cortes). Corrección solo en `apps/web/src/styles.css`: `.kv` pasa a `minmax(0, 1fr)` en móvil y `max-content minmax(0, 1fr)` en ≥ 40rem, y `.kv dd` recibe `min-width: 0; overflow-wrap: anywhere`. Revisión de otros usos: `.kv` también está en el panel (correo, rol, permisos), cubierto por la misma regla; usuarios y auditoría (uuid, IP, metadatos) usan tablas dentro de `.table-wrap` con `overflow-x: auto`, sin desbordar la página. `typecheck`, `lint`, `test` (35 de 35) y `build` en verde; la comprobación visual a 360 px la repite ATLAS en Chrome.

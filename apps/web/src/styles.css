@@ -324,7 +324,7 @@ form button.primary {
 
 .kv {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.15rem 1rem;
   margin: 0 0 1rem;
 }
@@ -334,10 +334,12 @@ form button.primary {
 }
 .kv dd {
   margin: 0;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 @media (min-width: 40rem) {
   .kv {
-    grid-template-columns: max-content 1fr;
+    grid-template-columns: max-content minmax(0, 1fr);
   }
   .kv dt {
     margin-top: 0;
