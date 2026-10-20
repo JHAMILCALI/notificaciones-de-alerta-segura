@@ -6,6 +6,14 @@ y migraciones SQL versionadas en `packages/database/prisma/migrations`. El clien
 
 ## Modelo (semana 1)
 
+Diagrama entidad-relación editable en Excalidraw:
+[`docs/diagramas/alertasegura-base-de-datos.excalidraw`](../diagramas/alertasegura-base-de-datos.excalidraw)
+(ábrelo en https://excalidraw.com arrastrando el archivo o con *Abrir*).
+
+![Modelo de datos de AlertaSegura](../diagramas/alertasegura-base-de-datos.png)
+
+Versión en texto:
+
 ```text
             createdById (SET NULL)
           ┌───────────────┐
