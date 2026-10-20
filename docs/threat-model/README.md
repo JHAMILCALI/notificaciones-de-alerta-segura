@@ -1,59 +1,81 @@
 # Modelo de amenazas
 
+Referencia oficial: `AlertaSegura_Propuesta_Definitiva_Seguridad_4_Semanas.pdf`, secciones 02 (adversarios),
+03 (actores y permisos), 09 (amenazas, controles y evidencia) y 13 (riesgos residuales). Este documento reproduce
+esa matriz sin cambiar sus amenazas, riesgos, controles ni pruebas, y añade el estado real tras la semana 1.
+
 ## Activos
 
 | Activo | Por qué importa |
 | --- | --- |
-| Clave privada de firma | Quien la controla puede emitir alertas falsas que la PWA aceptará como auténticas |
-| Cuentas de emisor y administrador | Permiten crear y publicar alertas o provisionar emisores |
+| Clave privada del servicio firmante | Quien la controla produce firmas matemáticamente válidas sobre alertas falsas |
+| Clave raíz de prueba y manifiesto de confianza | Deciden qué claves acepta la PWA y cuáles están revocadas |
+| Cuentas de emisor y de administrador | Permiten crear, publicar y cancelar alertas o gestionar usuarios |
 | Sesiones activas | Equivalen a la cuenta mientras están vigentes |
-| Integridad de las alertas | Una alerta alterada puede provocar daño real (pánico, evacuaciones innecesarias) |
-| Registro de auditoría | Permite atribuir y reconstruir acciones críticas |
-| Disponibilidad de la API | Durante una emergencia la publicación no puede bloquearse |
+| Alertas publicadas, eventos de cancelación y estado firmado | Su integridad y frescura determinan lo que el ciudadano cree vigente |
+| Registro de auditoría | Atribuye las acciones críticas (la firma prueba origen del sistema, no autoría individual) |
 
-## Actores
+## Actores (sección 03)
 
-Ciudadano anónimo · Emisor legítimo · Emisor malicioso o comprometido · Administrador · Auditor · Atacante externo en Internet · Atacante con acceso a la red local o al repositorio.
+| Actor | Función | Restricción de seguridad |
+| --- | --- | --- |
+| Administrador | Gestionar usuarios ordinarios y consultar auditoría | No publica alertas ni se autoasigna rol emisor; altas de emisores mediante script del responsable de laboratorio |
+| Emisor A o B | Iniciar sesión, crear borradores, publicar y cancelar sus propias alertas | Verificación por rol y por `emisor_id`; no accede a claves privadas |
+| Ciudadano | Consultar listado, detalle y evidencia local sin iniciar sesión | No posee endpoints de escritura públicos |
+| Servicio firmante | Firmar payloads validados desde un canal interno restringido | Proceso y usuario de sistema independientes; único con acceso a la clave privada |
+| Responsable del laboratorio | Emitir y actualizar el manifiesto y revocar claves con utilidad offline | Clave raíz fuera del servicio web y del repositorio |
 
-## Superficies de ataque
+## Adversarios (sección 02)
 
-API REST pública (`/api/v1`), formulario de login, cookies de sesión, PWA en el navegador, base de datos, repositorio Git y variables de entorno, proceso firmante (semana 2).
+**Dentro del alcance:** público anónimo; rol autenticado sin permiso; emisor sobre alerta ajena; proxy que altera u
+oculta datos; cuenta SQL de la aplicación; robo simulado de clave.
+**Fuera del alcance:** superusuario de BD; web comprometida que reemplaza la PWA; dispositivo o reloj malicioso.
 
-## Matriz T1–T11
+## Matriz T1–T11 (sección 09)
 
-Riesgo = probabilidad × impacto (B/M/A). Estado en la semana 1: **Mitigado** (control implementado y probado), **Parcial** o **Pendiente** (semana indicada).
+Estado tras la semana 1: **Mitigado** (control implementado y prueba oficial aprobada), **Parcial** (parte del
+control implementada y probada; la prueba oficial corresponde a un gate posterior) o **Pendiente** (gate indicado).
 
-| ID | Amenaza (STRIDE) | Riesgo | Controles | Pruebas | Estado S1 |
-| --- | --- | --- | --- | --- | --- |
-| T1 | Suplantación de un emisor por fuerza bruta o *credential stuffing* (S) | **Alto** | Argon2id; límite de login por IP y por cuenta; mensaje genérico; hash señuelo para cuentas inexistentes; sin autorregistro | P01, P09 | Mitigado |
-| T2 | Secuestro o fijación de sesión (S) | **Alto** | Token opaco de 32 bytes, solo su SHA-256 en BD; cookie HttpOnly + SameSite=Strict + Secure/`__Host-` bajo HTTPS; rotación en login; caducidad absoluta e inactividad; revocación en logout | P01 | Mitigado |
-| T3 | CSRF: un sitio externo hace publicar al emisor (T/E) | **Alto** | SameSite=Strict; token *signed double-submit* ligado a la sesión en `X-CSRF-Token`; rechazo de `Origin` ajeno | P02b (sin token → 403), unitarias CSRF | Mitigado |
-| T4 | Escalada vertical: anónimo o rol sin permiso publica (E) | **Alto** | Guard de autenticación global (401); RBAC en servidor con matriz única; ADMIN sin `alerts:publish` | P02a, P02b | Mitigado |
-| T5 | Escalada horizontal / IDOR: un emisor usa borradores de otro (E) | **Alto** | Comprobación de propiedad en servidor tras RBAC | P02b (emisor no propietario → 403) | Mitigado |
-| T6 | Alteración de una alerta en tránsito, en BD o en caché (T) | **Alto** | Firma ECDSA P-256/SHA-256 sobre JCS (RFC 8785); verificación en el cliente con Web Crypto; rechazo de cualquier cambio | P13 | Parcial: verificación lista; firma de alertas reales en S2 |
-| T7 | Robo o uso indebido de la clave privada (S/T) | **Crítico** | Firmante aislado con usuario, red y secreto propios; la API y la PWA nunca leen la clave; `*.pem`/`*.key` ignorados; claves de laboratorio efímeras | Revisión: ninguna clave privada en el repositorio ni en el bundle | Pendiente S2 (aislamiento); verificado que no hay claves privadas |
-| T8 | Denegación de servicio por abuso de endpoints (D) | Medio | Rate limiting global, por usuario y de login; límite de cuerpo JSON; longitud máxima de contraseña antes de Argon2id | P09 | Mitigado (una instancia) |
-| T9 | Inyección y entrada malformada, *mass assignment* (T/E) | Medio | Prisma con consultas parametrizadas; Zod `strictObject` en todas las entradas; el rol lo fija el servidor | e2e de validación (400) | Mitigado |
-| T10 | Repudio: no poder atribuir una acción crítica (R) | Medio | Auditoría de login, logout, denegaciones, CSRF, rate limiting, provisión y publicación; trigger que impide UPDATE/DELETE en `AuditLog` | e2e de auditoría y append-only | Mitigado |
-| T11 | Fuga de información: trazas, secretos en Git, datos sensibles en logs (I) | Medio | Filtro global de errores sin detalles internos; `.env` ignorado; secretos generados localmente; nunca contraseñas ni tokens en auditoría; React sin `dangerouslySetInnerHTML` | Revisión de código y búsqueda de secretos | Mitigado |
+| ID | Amenaza | Riesgo | Control propuesto | Prueba | Gate | Estado tras S1 |
+| --- | --- | --- | --- | --- | --- | --- |
+| T1 | Publicación anónima / sin rol | **ALTO** | Sesión, RBAC, 401/403 y alta controlada de emisores | P01, P02a–b | G1 | **Mitigado**: P01, P02a y P02b aprobadas |
+| T2 | Modificación API/BD | **ALTO** | Firma de bytes canónicos, verificación local y SQL de mínimo privilegio | P03, P07, P11 | G2/G3 | **Parcial**: JCS y verificación Web Crypto listas (P13); firma de publicaciones y rol SQL mínimo en S2 |
+| T3 | Firma con clave robada | **ALTO** | Manifiesto de raíz; revocación completa y control de versión | P04, P14 | G3/G4 | Pendiente |
+| T4 | Alerta caducada | MEDIO | `expira_en` firmado + reloj evaluado localmente (limitado por su confianza) | P05 | G3 | Pendiente |
+| T5 | Cancelación falsa | **ALTO** | Evento firmado con `hash_alerta` | P06 | G2/G3 | Pendiente |
+| T6 | Escritura en publicado | **ALTO** | Tablas separadas y permisos sin UPDATE/DELETE | P07 | G2 | Pendiente (aún no existe `ALERTA_PUBLICADA`) |
+| T7 | Auditoría modificada | MEDIO | HMAC encadenado + checkpoint fuera de BD; permisos append-only | P08/P08b | G3 | **Parcial**: trigger append-only (UPDATE/DELETE/TRUNCATE rechazados, probado en e2e); HMAC y checkpoint en S3 |
+| T8 | Fuerza bruta / abuso | MEDIO | Rate limit por IP y usuario, y cuotas de publicación | P09 | G1 | **Mitigado** en login y API: P09 aprobada; las cuotas de publicación llegan con la publicación (S2) |
+| T9 | Datos obsoletos en PWA | MEDIO | Cachear solo el shell; falta de frescura ⇒ NO COMPROBABLE | P10 | G3 | Pendiente |
+| T10 | Emisor afecta alerta ajena | **ALTO** | Control de propiedad `emisor_id` en la API | P02c | G2 | **Parcial**: propiedad implementada y probada sobre borradores (emisor B → 403 en P02b); P02c sobre alertas en S2 |
+| T11 | Supresión de cancelación | **ALTO** | Estado firmado fresco (10 min); rechazo sin estado válido | P06b | G3 | Pendiente |
 
-## Amenazas altas → controles → pruebas
+## Amenazas altas → control → prueba (OE1)
 
-| Amenaza | Control verificable | Prueba G1 | Evidencia |
-| --- | --- | --- | --- |
-| T1 | 6.º login fallido para una cuenta → 429 con `Retry-After`; contraseña errónea → 401 genérico | P01, P09 | `docs/evidence/g1/` |
-| T2 | Cookie `HttpOnly; SameSite=Strict`; tras logout la cookie anterior → 401 | P01 | `docs/evidence/g1/` |
-| T3 | Publicar sin `X-CSRF-Token` → 403 `CSRF_INVALID` | P02b | `docs/evidence/g1/` |
-| T4 | Anónimo → 401; AUDITOR/ADMIN → 403 | P02a, P02b | `docs/evidence/g1/` |
-| T5 | Emisor B publica borrador de A → 403 | P02b | `docs/evidence/g1/` |
-| T6 | Firma Node verificada en Web Crypto; contenido o firma alterados rechazados | P13 | `docs/evidence/g1/` |
+OE1 exige, al cierre de S1, que el 100 % de las amenazas altas tenga un control y una prueba asignados.
+Las siete amenazas ALTAS (T1, T2, T3, T5, T6, T10 y T11) los tienen en la matriz. Ejecutadas hasta ahora:
 
-## Riesgos pendientes
+| Amenaza alta | Control verificable en S1 | Evidencia |
+| --- | --- | --- |
+| T1 | Anónimo → 401; ADMIN/AUDITOR → 403; emisores solo por alta controlada | P01, P02a, P02b ([`docs/evidence/g1/`](../evidence/g1/)) |
+| T2 | Bytes JCS idénticos en Node y Web Crypto; contenido alterado rechazado | P13 (base criptográfica de P03/P11) |
+| T10 | Emisor B no lee ni publica el borrador del emisor A (403) | P02b (precursor de P02c) |
+| T3, T5, T6, T11 | Diseñados; dependen del firmante, la publicación y el manifiesto | Gates G2–G4 |
+
+## Riesgos residuales (sección 13) y de implementación
+
+- La firma ECDSA demuestra origen en el **sistema** y ausencia de alteraciones; no identifica a la persona. La atribución individual procede de sesión, RBAC y auditoría.
+- Una clave robada produce firmas válidas hasta que el receptor recibe un manifiesto nuevo; la ventana se medirá en P14.
+- La supresión de una cancelación puede sostener un estado viejo pero firmado mientras dure su frescura (máx. 10 min).
+- Fuera de cobertura: servidor que sirve una PWA maliciosa, dispositivo comprometido, superusuario de BD y reloj del cliente alterado.
+- HMAC encadenado y checkpoint externo detectan modificaciones bajo amenazas delimitadas; no sustituyen un almacenamiento inviolable ni un HSM.
+
+Riesgos de la implementación de la semana 1:
 
 | ID | Riesgo | Plan |
 | --- | --- | --- |
-| R-01 | El firmante aislado no existe todavía (T7) | Semana 2 |
-| R-02 | Sin HTTPS en desarrollo: `Secure` solo se activa con `COOKIE_SECURE=true` | Proxy TLS en despliegue; `COOKIE_SECURE=true` obligatorio en producción |
-| R-03 | El rate limiting vive en memoria: se reinicia con el proceso y no se comparte entre instancias | Almacén compartido (Redis o PostgreSQL) si se escala |
-| R-04 | Sin MFA para cuentas de emisor | Evaluar TOTP/WebAuthn en semanas posteriores |
-| R-05 | Sin política de rotación ni revocación de claves públicas en la PWA | `tools/trust-cli` y manifiestos (semana 2–3) |
+| R-01 | El firmante aislado no existe todavía (T2, T3) | Semana 2 (D6) |
+| R-02 | Sin TLS de laboratorio: `Secure`/`__Host-` solo con `COOKIE_SECURE=true` (RNF01) | TLS de laboratorio antes de la demostración |
+| R-03 | Rate limiting en memoria de un solo proceso | Almacén compartido si se escala |
+| R-04 | El límite por cuenta permite bloquear temporalmente una cuenta conocida | Límite por cuenta+IP o CAPTCHA |
+| R-05 | La API usa el rol propietario de PostgreSQL | Rol app sin UPDATE/DELETE en publicaciones y auditoría (P07, semana 2) |
