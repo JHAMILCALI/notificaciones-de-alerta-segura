@@ -7,15 +7,20 @@
     "node": ">=24.11.0"
   },
   "scripts": {
-    "dev": "pnpm --parallel --filter @alertasegura/web --filter @alertasegura/api dev",
+    "build:packages": "pnpm --filter @alertasegura/shared --filter @alertasegura/verification build",
+    "dev": "pnpm build:packages && pnpm --parallel --filter @alertasegura/web --filter @alertasegura/api dev",
     "dev:web": "pnpm --filter @alertasegura/web dev",
     "dev:api": "pnpm --filter @alertasegura/api dev",
-    "db:up": "docker compose -f infra/compose.yml up -d postgres",
-    "db:down": "docker compose -f infra/compose.yml down",
+    "db:up": "docker compose -f infra/compose.yml --env-file .env up -d --wait postgres",
+    "db:down": "docker compose -f infra/compose.yml --env-file .env down",
     "db:generate": "pnpm --filter @alertasegura/database db:generate",
     "db:migrate": "pnpm --filter @alertasegura/database db:migrate",
+    "db:deploy": "pnpm --filter @alertasegura/database db:deploy",
+    "db:seed": "pnpm --filter @alertasegura/database db:seed",
     "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
+    "test:e2e": "pnpm --filter @alertasegura/api test:e2e",
     "lint": "pnpm -r --if-present lint"
   }
 }
