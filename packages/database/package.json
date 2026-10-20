@@ -2,20 +2,38 @@
   "name": "@alertasegura/database",
   "version": "0.1.0",
   "private": true,
-  "type": "module",
   "scripts": {
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "typecheck": "prisma generate && tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@prisma/client": "^7.10.1"
+    "@node-rs/argon2": "^2.2.2",
+    "@prisma/adapter-pg": "^7.10.1",
+    "@prisma/client": "^7.10.1",
+    "pg": "^8.23.1"
   },
   "devDependencies": {
+    "@types/node": "^26.6.5",
+    "@types/pg": "^8.23.1",
     "dotenv": "^17.2.3",
     "prisma": "^7.10.1",
     "tsx": "^4.20.0",
     "typescript": "~6.0.2"
-  }
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "prisma"
+  ]
 }

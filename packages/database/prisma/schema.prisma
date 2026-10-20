@@ -1,10 +1,115 @@
+// Cliente generado en CommonJS dentro de src/generated (ignorado en Git) para que lo consuman
+// NestJS (CJS) y Jest. Ver docs/coordination/forge-report.md.
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/client"
+  provider            = "prisma-client"
+  output              = "../src/generated"
+  moduleFormat        = "cjs"
+  runtime             = "nodejs"
+  generatedFileExtension = "ts"
+  importFileExtension = ""
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-// Los modelos se incorporarán junto con las reglas de acceso y sus pruebas.
+enum Role {
+  ADMIN
+  ISSUER
+  AUDITOR
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum Severity {
+  INFO
+  WARNING
+  CRITICAL
+}
+
+enum DraftStatus {
+  DRAFT
+}
+
+enum AuditOutcome {
+  SUCCESS
+  DENIED
+  FAILURE
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  /// Siempre en minúsculas y recortado (CHECK en la migración).
+  email        String     @unique
+  displayName  String
+  passwordHash String
+  role         Role
+  status       UserStatus @default(ACTIVE)
+  createdById  String?    @db.Uuid
+  createdAt    DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime   @updatedAt @db.Timestamptz(3)
+
+  createdBy User?  @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  created   User[] @relation("UserCreatedBy")
+
+  sessions Session[]
+  drafts   Draft[]
+
+  @@index([role])
+  @@index([createdById])
+}
+
+model Session {
+  id         String    @id @default(uuid()) @db.Uuid
+  /// SHA-256 (hex) del token de la cookie; el token en claro nunca se guarda.
+  tokenHash  String    @unique
+  userId     String    @db.Uuid
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+  lastSeenAt DateTime  @default(now()) @db.Timestamptz(3)
+  expiresAt  DateTime  @db.Timestamptz(3)
+  revokedAt  DateTime? @db.Timestamptz(3)
+  ip         String?
+  userAgent  String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
+}
+
+model Draft {
+  id        String      @id @default(uuid()) @db.Uuid
+  title     String
+  body      String
+  severity  Severity
+  status    DraftStatus @default(DRAFT)
+  ownerId   String      @db.Uuid
+  createdAt DateTime    @default(now()) @db.Timestamptz(3)
+  updatedAt DateTime    @updatedAt @db.Timestamptz(3)
+
+  owner User @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+
+  @@index([ownerId, createdAt(sort: Desc)])
+}
+
+/// Append-only: un trigger en la migración impide UPDATE y DELETE.
+model AuditLog {
+  id         String       @id @default(uuid()) @db.Uuid
+  occurredAt DateTime     @default(now()) @db.Timestamptz(3)
+  action     String
+  outcome    AuditOutcome
+  /// Sin FK a propósito: la evidencia sobrevive aunque cambie la tabla de usuarios.
+  actorId    String?      @db.Uuid
+  targetType String?
+  targetId   String?
+  ip         String?
+  userAgent  String?
+  metadata   Json         @default("{}")
+
+  @@index([occurredAt(sort: Desc)])
+  @@index([action, occurredAt(sort: Desc)])
+  @@index([actorId, occurredAt(sort: Desc)])
+}
