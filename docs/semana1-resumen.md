@@ -284,6 +284,7 @@ Las 7 amenazas ALTAS tienen control y prueba asignados, como exige el objetivo O
 | --- | --- |
 | [`README.md`](../README.md) | Cómo levantar todo en local e iniciar sesión |
 | [`guia-inicio-local.md`](guia-inicio-local.md) | Paso a paso detallado, en orden, con comprobaciones |
+| [`diagramas-comportamiento.md`](diagramas-comportamiento.md) | 16 diagramas Mermaid de cómo se conecta y se comporta todo |
 | [`architecture/README.md`](architecture/README.md) | Arquitectura y decisiones técnicas |
 | [`database/README.md`](database/README.md) | Modelo SQL, invariantes y migraciones |
 | [`threat-model/README.md`](threat-model/README.md) | Amenazas T1–T11, actores y riesgos residuales |
