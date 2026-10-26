@@ -141,8 +141,8 @@ describe('D-1: los emisores se dan de alta solo con el comando de laboratorio', 
     ): string => {
       const env: NodeJS.ProcessEnv = {
         ...process.env,
-        DATABASE_URL: process.env.TEST_DATABASE_URL,
-        DATABASE_MIGRATION_URL: process.env.TEST_DATABASE_URL,
+        DATABASE_URL: process.env.TEST_OWNER_DATABASE_URL,
+        DATABASE_MIGRATION_URL: process.env.TEST_OWNER_DATABASE_URL,
       };
       delete env.LAB_ISSUER_PASSWORD;
       if (opts.password) env.LAB_ISSUER_PASSWORD = opts.password;
@@ -406,7 +406,7 @@ describe('Auditoría: consulta y append-only', () => {
     }
   });
 
-  it('trigger append-only: UPDATE y DELETE sobre AuditLog fallan en PostgreSQL', async () => {
+  it('trigger append-only: UPDATE y DELETE sobre AuditLog fallan en PostgreSQL incluso para el propietario', async () => {
     const entry = await t.prisma.auditLog.create({
       data: {
         action: 'AUTH_LOGOUT',
@@ -415,26 +415,26 @@ describe('Auditoría: consulta y append-only', () => {
       },
     });
     await expect(
-      t.prisma.auditLog.update({
+      t.owner.auditLog.update({
         where: { id: entry.id },
         data: { action: 'ACCESS_DENIED' },
       }),
     ).rejects.toThrow(/append-only/i);
     await expect(
-      t.prisma.auditLog.delete({ where: { id: entry.id } }),
+      t.owner.auditLog.delete({ where: { id: entry.id } }),
     ).rejects.toThrow(/append-only/i);
     await expect(
-      t.prisma
+      t.owner
         .$executeRaw`UPDATE "AuditLog" SET "outcome" = 'DENIED' WHERE "id" = ${entry.id}::uuid`,
     ).rejects.toThrow(/append-only/i);
-    await expect(t.prisma.$executeRaw`DELETE FROM "AuditLog"`).rejects.toThrow(
+    await expect(t.owner.$executeRaw`DELETE FROM "AuditLog"`).rejects.toThrow(
       /append-only/i,
     );
-    await expect(t.prisma.auditLog.deleteMany({})).rejects.toThrow(
+    await expect(t.owner.auditLog.deleteMany({})).rejects.toThrow(
       /append-only/i,
     );
     await expect(
-      t.prisma.$executeRawUnsafe('TRUNCATE TABLE "AuditLog"'),
+      t.owner.$executeRawUnsafe('TRUNCATE TABLE "AuditLog"'),
     ).rejects.toThrow(/append-only/i);
     const still = await t.prisma.auditLog.findUniqueOrThrow({
       where: { id: entry.id },

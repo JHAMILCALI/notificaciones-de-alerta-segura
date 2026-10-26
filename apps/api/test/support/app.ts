@@ -4,6 +4,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import type TestAgent from 'supertest/lib/agent';
 import {
+  createPrismaClient,
   hashPassword,
   type PrismaClient,
   type Role,
@@ -63,7 +64,10 @@ export function testConfig(overrides: ConfigOverrides = {}): AppConfig {
 
 export interface TestApp {
   app: NestExpressApplication;
+  /** Cliente de la app: conectado con el rol alertasegura_app, igual que la API. */
   prisma: PrismaClient;
+  /** Cliente con el rol propietario de la base de prueba (preparar datos y comprobar triggers). */
+  owner: PrismaClient;
   config: AppConfig;
   /** Cliente HTTP con jar de cookies propio (un navegador). */
   browser: () => TestAgent;
@@ -84,12 +88,25 @@ export async function createTestApp(
   });
   await configureApp(app);
   const prisma = app.get(PrismaService);
+  const ownerUrl = process.env.TEST_OWNER_DATABASE_URL;
+  if (!ownerUrl)
+    throw new Error(
+      'TEST_OWNER_DATABASE_URL no definida (globalSetup no se ejecutó)',
+    );
+  const owner = createPrismaClient({
+    connectionString: ownerUrl,
+    maxConnections: 2,
+  });
   return {
     app,
     prisma,
+    owner,
     config,
     browser: () => request.agent(app.getHttpServer()),
-    close: () => app.close(),
+    close: async () => {
+      await owner.$disconnect();
+      await app.close();
+    },
   };
 }
 
