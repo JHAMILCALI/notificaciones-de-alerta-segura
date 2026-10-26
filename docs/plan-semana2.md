@@ -98,21 +98,57 @@ flowchart LR
 
 | Agente | Responsable de | Carpetas que le pertenecen |
 | --- | --- | --- |
-| **ATLAS** (orquestador) | Decisiones, contratos compartidos, revisión de cada entrega, integración, aceptación G2 de caja negra, evidencias, documentación y **todos los commits** | `packages/shared`, `docs/`, `tests/security/` |
+| **ATLAS** (orquestador) | Decisiones, contratos compartidos, revisión de cada entrega, **fusión en `feat/semana-2`**, aceptación G2 de caja negra, evidencias y documentación | `packages/shared`, `docs/`, `tests/security/` |
 | **SHIRO** (backend) | Base de datos, migraciones, roles SQL, módulos `alerts` y `trust` de la API, publicación, cancelación, estado, cuotas, Docker de la API y e2e | `apps/api`, `packages/database`, `infra/` (salvo el firmante) |
 | **MOTO** (criptografía) | Proceso firmante, CLI de confianza, extensiones de `verification` (`tipo_doc`, manifiesto), vectores P16, formulario de borradores de la web (D-4) y rutas (D-3) | `apps/signer`, `tools/trust-cli`, `packages/verification`, `apps/web`, `infra/docker/signer.Dockerfile` |
 
+### Worktrees: cada agente en su copia y su rama
+
+Para que los agentes no se pisen, cada uno trabaja en un **git worktree** propio dentro del proyecto. La carpeta
+`.worktrees/` está en `.gitignore` y en `.dockerignore`. Los **commits viven en las ramas** del repositorio, así que se
+conservan aunque luego se borre la carpeta del worktree.
+
+| Agente | Carpeta de trabajo | Rama | Base de datos local | Puerto de la API |
+| --- | --- | --- | --- | --- |
+| ATLAS | `alertasegura/` (raíz) | `feat/semana-2` (integración) | `alertasegura` | 3000 |
+| SHIRO | `alertasegura/.worktrees/shiro` | `s2/shiro` | `alertasegura_shiro` | 3100 |
+| MOTO | `alertasegura/.worktrees/moto` | `s2/moto` | `alertasegura_moto` | 3200 |
+
+Las tres bases de datos viven en el mismo contenedor PostgreSQL (`localhost:5433`). Cada worktree tiene su propio `.env`
+(ignorado por Git) y su `node_modules`.
+
+```mermaid
+flowchart LR
+    S1["feat/semana-1"] --> S2["feat/semana-2<br/>(ATLAS integra)"]
+    S2 -->|"git merge feat/semana-2<br/>(sincronizar)"| SH["s2/shiro<br/>.worktrees/shiro"]
+    S2 -->|sincronizar| MO["s2/moto<br/>.worktrees/moto"]
+    SH -->|"ATLAS revisa y fusiona<br/>(--no-ff)"| S2
+    MO -->|"ATLAS revisa y fusiona<br/>(--no-ff)"| S2
+```
+
+**Flujo de cada entrega:**
+
+1. El agente trabaja y hace **commits pequeños** en su rama (`s2/shiro` o `s2/moto`), terminados con su línea `Co-Authored-By`.
+   No hace push, no cambia de rama y no fusiona ramas ajenas.
+2. Avisa a ATLAS con su reporte: commits, comandos ejecutados con su resultado y temas abiertos.
+3. ATLAS revisa el diff, ejecuta las pruebas y lo fusiona en `feat/semana-2` con `--no-ff`, para que el historial muestre
+   qué entregó cada agente.
+4. Cuando ATLAS publica contratos o fusiona trabajo del otro agente, cada agente se sincroniza con
+   `git merge feat/semana-2` dentro de su worktree.
+5. Al cerrar la semana: `git worktree remove .worktrees/<agente>`. Las ramas `s2/*` y sus commits se conservan.
+
 **Reglas de trabajo** (las mismas que en la semana 1):
 
-1. **Propiedad de archivos:** nadie edita una carpeta ajena. Si un contrato necesita un cambio, se le pide a ATLAS.
+1. **Propiedad de archivos:** nadie edita una carpeta ajena, aunque esté en su worktree. Si un contrato necesita un
+   cambio, se le pide a ATLAS.
 2. **Cumplir el contrato:** los contratos de `packages/shared` y de `docs/coordination/` son la fuente de verdad.
    Si una tarea no puede cumplirlo, se avisa; no se improvisa.
 3. **Nada de pruebas falsas:** no se implementa nada para pasar una prueba a la fuerza, y nada se marca como aprobado
    sin haberlo ejecutado.
 4. **Ninguna clave privada** en el repositorio, en la API ni en la web. Las claves de laboratorio se guardan en
    `secrets/` (ignorada por Git) o fuera del proyecto.
-5. **Reporte de cada entrega:** qué se hizo, qué comandos se ejecutaron y con qué resultado, y qué queda abierto.
-   ATLAS revisa y solo después integra y hace el commit.
+5. **Reporte de cada entrega:** commits, qué se hizo, qué comandos se ejecutaron y con qué resultado, y qué queda
+   abierto. ATLAS revisa y solo después fusiona.
 
 ---
 
@@ -231,7 +267,7 @@ Siguiendo §11 de la propuesta:
 | --- | --- | --- |
 | Socket Unix y usuarios del sistema en Windows | La API y el firmante no se aíslan bien fuera de Linux | Ejecutarlos en contenedores Linux (S2-27). En Windows no se ejecuta P15 fuera de Docker |
 | Cambiar D-4 rompe las pruebas de la semana 1 | Regresiones en P02b y en la web | Se hace al principio y se corre la regresión G1 antes de seguir |
-| Los dos agentes editan en el mismo repositorio a la vez | Conflictos | Reparto estricto por carpetas; solo ATLAS hace commits; `shared` es solo de ATLAS |
+| Los dos agentes editan en el mismo repositorio a la vez | Conflictos | Un worktree y una rama por agente; reparto estricto por carpetas; `shared` es solo de ATLAS; ATLAS fusiona |
 | La clave de laboratorio se filtra al repositorio | Fallo grave de seguridad | `secrets/` en `.gitignore` + escaneo de secretos antes de cada commit (ATLAS) |
 | Desfase entre el firmante y `verification` | P13 o P16 fallan | Un único contrato de documentos en `shared` y vectores compartidos |
 
