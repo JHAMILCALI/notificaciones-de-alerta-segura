@@ -24,3 +24,7 @@ infra/secrets/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Worktrees de los agentes de la semana 2 (shiro, moto): cada uno trabaja en su rama; las ramas y sus commits
+# viven en el repositorio, la carpeta es solo la copia de trabajo local.
+.worktrees/
