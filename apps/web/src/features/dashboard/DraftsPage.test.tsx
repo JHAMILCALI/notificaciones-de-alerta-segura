@@ -86,7 +86,7 @@ describe('borradores del emisor (D-4, Bolivia)', () => {
       if (call.url.endsWith('/drafts')) return jsonResponse({ drafts: created ? [draft] : [] })
       return errorResponse(404, 'NOT_FOUND', 'No existe')
     })
-    renderApp({ fetchMock, route: '/panel/borradores' })
+    renderApp({ fetchMock, route: '/admin/borradores' })
 
     expect(await screen.findByText('Todavía no tienes borradores.')).toBeInTheDocument()
 
@@ -115,7 +115,7 @@ describe('borradores del emisor (D-4, Bolivia)', () => {
   it('el municipio es opcional: vacío se envía como null', async () => {
     const user = userEvent.setup({ delay: null })
     const fetchMock = routes({ drafts: () => [] })
-    renderApp({ fetchMock, route: '/panel/borradores' })
+    renderApp({ fetchMock, route: '/admin/borradores' })
     await user.selectOptions(await screen.findByLabelText('Tipo de alerta'), 'HELADA')
     await user.selectOptions(screen.getByLabelText('Departamento'), 'LA_PAZ')
     await user.click(screen.getByLabelText('Mensaje'))
@@ -135,7 +135,7 @@ describe('borradores del emisor (D-4, Bolivia)', () => {
   it('valida antes de llamar a la API: falta tipo y departamento, mensaje corto', async () => {
     const user = userEvent.setup({ delay: null })
     const fetchMock = routes({ drafts: () => [] })
-    renderApp({ fetchMock, route: '/panel/borradores' })
+    renderApp({ fetchMock, route: '/admin/borradores' })
     await user.type(await screen.findByLabelText('Mensaje'), 'corto')
     await user.click(screen.getByRole('button', { name: 'Crear borrador' }))
     const alert = await screen.findByRole('alert')
@@ -148,7 +148,7 @@ describe('borradores del emisor (D-4, Bolivia)', () => {
   it.each(['0', '73', '1.5', ''])('rechaza la vigencia "%s" (solo enteros de 1 a 72 horas)', async (value) => {
     const user = userEvent.setup({ delay: null })
     const fetchMock = routes({ drafts: () => [] })
-    renderApp({ fetchMock, route: '/panel/borradores' })
+    renderApp({ fetchMock, route: '/admin/borradores' })
     await user.selectOptions(await screen.findByLabelText('Tipo de alerta'), 'HELADA')
     await user.selectOptions(screen.getByLabelText('Departamento'), 'ORURO')
     await user.click(screen.getByLabelText('Mensaje'))
@@ -161,7 +161,7 @@ describe('borradores del emisor (D-4, Bolivia)', () => {
   })
 
   it('muestra tipo, zona, nivel con su nombre, vigencia y la fecha en hora de Bolivia', async () => {
-    renderApp({ fetchMock: routes(), route: '/panel/borradores' })
+    renderApp({ fetchMock: routes(), route: '/admin/borradores' })
     const item = (await screen.findByRole('heading', { name: 'Lluvias intensas' })).closest('li')
     expect(item).not.toBeNull()
     const scope = within(item as HTMLElement)
@@ -177,7 +177,7 @@ describe('publicar un borrador', () => {
   it('201: muestra el identificador de la alerta y marca el borrador como publicado', async () => {
     const user = userEvent.setup({ delay: null })
     const fetchMock = routes()
-    renderApp({ fetchMock, route: '/panel/borradores' })
+    renderApp({ fetchMock, route: '/admin/borradores' })
     await user.click(await screen.findByRole('button', { name: /Publicar borrador de Lluvias intensas/ }))
 
     expect(await screen.findByText(ALERTA_ID, { selector: 'p.alert code' })).toBeInTheDocument()
@@ -193,7 +193,7 @@ describe('publicar un borrador', () => {
     const user = userEvent.setup({ delay: null })
     renderApp({
       fetchMock: routes({ publish: () => errorResponse(503, 'SIGNER_UNAVAILABLE', 'Firmante no disponible') }),
-      route: '/panel/borradores',
+      route: '/admin/borradores',
     })
     await user.click(await screen.findByRole('button', { name: /Publicar borrador/ }))
     expect(await within(await screen.findByRole('listitem')).findByRole('alert')).toHaveTextContent(
@@ -216,7 +216,7 @@ describe('publicar un borrador', () => {
       }
       return jsonResponse({ drafts: [published ? { ...draft, status: 'PUBLISHED', alertaId: ALERTA_ID } : draft] })
     })
-    renderApp({ fetchMock, route: '/panel/borradores' })
+    renderApp({ fetchMock, route: '/admin/borradores' })
     await user.click(await screen.findByRole('button', { name: /Publicar borrador/ }))
     expect(await screen.findByText('Publicada')).toBeInTheDocument()
   })
@@ -225,7 +225,7 @@ describe('publicar un borrador', () => {
     const user = userEvent.setup({ delay: null })
     renderApp({
       fetchMock: routes({ publish: () => errorResponse(429, 'RATE_LIMITED', 'Cuota', { 'Retry-After': '60' }) }),
-      route: '/panel/borradores',
+      route: '/admin/borradores',
     })
     await user.click(await screen.findByRole('button', { name: /Publicar borrador/ }))
     expect(await within(await screen.findByRole('listitem')).findByRole('alert')).toHaveTextContent('Demasiadas solicitudes')
@@ -233,7 +233,7 @@ describe('publicar un borrador', () => {
 
   it('sin el permiso alerts:publish no se ofrece el botón', async () => {
     const reader = { ...issuer, permissions: ['drafts:create', 'drafts:read-own'] }
-    renderApp({ fetchMock: routes({ user: reader }), route: '/panel/borradores' })
+    renderApp({ fetchMock: routes({ user: reader }), route: '/admin/borradores' })
     await screen.findByRole('heading', { name: 'Lluvias intensas' })
     expect(screen.queryByRole('button', { name: /Publicar borrador/ })).not.toBeInTheDocument()
   })
@@ -253,7 +253,7 @@ describe('publicar un borrador', () => {
       }
       return jsonResponse({ drafts: [draft] })
     })
-    renderApp({ fetchMock, route: '/panel/borradores' })
+    renderApp({ fetchMock, route: '/admin/borradores' })
     await user.click(await screen.findByRole('button', { name: /Publicar borrador/ }))
     const busy = await screen.findByRole('button', { name: /Publicar borrador/ })
     expect(busy).toBeDisabled()
@@ -279,7 +279,7 @@ describe('cancelar una alerta publicada', () => {
   it('pide confirmación, envía POST /alerts/:id/cancel con {} y CSRF, y marca la alerta como cancelada', async () => {
     const user = userEvent.setup({ delay: null })
     const fetchMock = cancelRoutes(() => jsonResponse({ alerta: alertaPublicada }, { status: 201 }))
-    renderApp({ fetchMock, route: '/panel/borradores' })
+    renderApp({ fetchMock, route: '/admin/borradores' })
 
     await user.click(await screen.findByRole('button', { name: /Cancelar la alerta/ }))
     // Todavía no se ha enviado nada: falta confirmar.
@@ -300,7 +300,7 @@ describe('cancelar una alerta publicada', () => {
   it('"No, volver" descarta la confirmación sin llamar a la API', async () => {
     const user = userEvent.setup({ delay: null })
     const fetchMock = cancelRoutes(() => jsonResponse({ alerta: alertaPublicada }, { status: 201 }))
-    renderApp({ fetchMock, route: '/panel/borradores' })
+    renderApp({ fetchMock, route: '/admin/borradores' })
     await user.click(await screen.findByRole('button', { name: /Cancelar la alerta/ }))
     await user.click(screen.getByRole('button', { name: 'No, volver' }))
     expect(screen.getByRole('button', { name: /Cancelar la alerta/ })).toBeInTheDocument()
@@ -311,7 +311,7 @@ describe('cancelar una alerta publicada', () => {
     const user = userEvent.setup({ delay: null })
     renderApp({
       fetchMock: cancelRoutes(() => errorResponse(503, 'SIGNER_UNAVAILABLE', 'Firmante no disponible')),
-      route: '/panel/borradores',
+      route: '/admin/borradores',
     })
     await user.click(await screen.findByRole('button', { name: /Cancelar la alerta/ }))
     await user.click(screen.getByRole('button', { name: 'Sí, cancelar alerta' }))
@@ -326,7 +326,7 @@ describe('cancelar una alerta publicada', () => {
     const user = userEvent.setup({ delay: null })
     renderApp({
       fetchMock: cancelRoutes(() => errorResponse(403, 'FORBIDDEN', 'Denegado')),
-      route: '/panel/borradores',
+      route: '/admin/borradores',
     })
     await user.click(await screen.findByRole('button', { name: /Cancelar la alerta/ }))
     await user.click(screen.getByRole('button', { name: 'Sí, cancelar alerta' }))
@@ -339,7 +339,7 @@ describe('cancelar una alerta publicada', () => {
     const user = userEvent.setup({ delay: null })
     renderApp({
       fetchMock: cancelRoutes(() => errorResponse(409, 'CONFLICT', 'Ya cancelada')),
-      route: '/panel/borradores',
+      route: '/admin/borradores',
     })
     await user.click(await screen.findByRole('button', { name: /Cancelar la alerta/ }))
     await user.click(screen.getByRole('button', { name: 'Sí, cancelar alerta' }))
@@ -351,7 +351,7 @@ describe('cancelar una alerta publicada', () => {
     const publisher = { ...issuer, permissions: ['drafts:create', 'drafts:read-own', 'alerts:publish'] }
     renderApp({
       fetchMock: cancelRoutes(() => jsonResponse({ alerta: alertaPublicada }, { status: 201 }), publisher),
-      route: '/panel/borradores',
+      route: '/admin/borradores',
     })
     await screen.findByText('Publicada')
     expect(screen.queryByRole('button', { name: /Cancelar la alerta/ })).not.toBeInTheDocument()

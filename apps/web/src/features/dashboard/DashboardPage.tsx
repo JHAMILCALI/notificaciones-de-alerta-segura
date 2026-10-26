@@ -44,17 +44,17 @@ export function DashboardPage() {
         <ul className="link-list">
           {can('users:read') && (
             <li>
-              <Link to="/panel/usuarios">Usuarios</Link>
+              <Link to="/admin/usuarios">Usuarios</Link>
             </li>
           )}
           {can('drafts:read-own') && (
             <li>
-              <Link to="/panel/borradores">Borradores</Link>
+              <Link to="/admin/borradores">Borradores</Link>
             </li>
           )}
           {can('audit:read') && (
             <li>
-              <Link to="/panel/auditoria">Auditoría</Link>
+              <Link to="/admin/auditoria">Auditoría</Link>
             </li>
           )}
           <li>

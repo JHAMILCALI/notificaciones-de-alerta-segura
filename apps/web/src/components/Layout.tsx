@@ -24,17 +24,17 @@ export function Layout() {
       </a>
       <header className="site-header">
         <div className="container header-inner">
-          <Link to="/" className="brand">
+          <Link to="/alertas" className="brand">
             AlertaSegura
           </Link>
           <nav aria-label="Principal" className="nav">
-            <NavLink to="/" end>
-              Inicio
+            <NavLink to="/alertas">
+              Alertas
             </NavLink>
             <NavLink to="/laboratorio/criptografia">Laboratorio</NavLink>
             {state.status === 'authenticated' ? (
               <>
-                <NavLink to="/panel">Panel</NavLink>
+                <NavLink to="/admin">Panel</NavLink>
                 <button type="button" className="link-button" onClick={() => void onLogout()} disabled={loggingOut}>
                   Salir
                 </button>
