@@ -4,6 +4,7 @@ import {
   CreateDraftRequestSchema,
   DraftIdParamSchema,
   type CreateDraftRequest,
+  type AlertaResponse,
   type DraftListResponse,
   type DraftResponse,
 } from '@alertasegura/shared';
@@ -15,8 +16,8 @@ import {
   ValidBody,
   ValidParams,
 } from '../../common/decorators/metadata';
-import { ApiException } from '../../common/http/api-exception';
 import type { AuthenticatedUser } from '../../common/http/request-context';
+import { AlertsService } from '../alerts/alerts.service';
 import { AuditService } from '../audit/audit.service';
 import { DraftOwnershipGuard } from './draft-ownership.guard';
 import { DraftsService } from './drafts.service';
@@ -26,6 +27,7 @@ export class DraftsController {
   constructor(
     private readonly drafts: DraftsService,
     private readonly audit: AuditService,
+    private readonly alerts: AlertsService,
   ) {}
 
   @RequirePermissions('drafts:create')
@@ -71,20 +73,21 @@ export class DraftsController {
   }
 
   /**
-   * Transitorio (entrega 1 de la semana 2): superados rate limiting, sesión, CSRF, validación,
-   * RBAC y propiedad, todavía no hay firmante conectado; no se publica ni se simula nada.
-   * La entrega 3 lo reemplaza por la publicación atómica con firma.
+   * Publicación atómica y firmada (api-contract-semana2.md). Los controles anteriores (rate limiting, sesión,
+   * CSRF, validación, RBAC y propiedad) ya se superaron; la firma, la transacción y la auditoría están en
+   * AlertsService.
    */
   @RequirePermissions('alerts:publish')
   @DeniedAction('PUBLICATION_DENIED')
   @Validate({ params: DraftIdParamSchema })
   @UseGuards(DraftOwnershipGuard)
   @Post(':draftId/publish')
-  publish(): never {
-    throw new ApiException(
-      501,
-      'SIGNER_UNAVAILABLE',
-      'La publicación firmada aún no está conectada al firmante',
-    );
+  publish(
+    @ValidParams() params: unknown,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req: Request,
+  ): Promise<AlertaResponse> {
+    const { draftId } = params as { draftId: string };
+    return this.alerts.publish(draftId, user, req);
   }
 }

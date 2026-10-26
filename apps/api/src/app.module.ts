@@ -11,19 +11,25 @@ import { ConfigModule } from './config/config.module';
 import { DatabaseModule } from './database/database.module';
 import { AuditModule } from './modules/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { ClockModule } from './common/clock/clock';
+import { AlertsModule } from './modules/alerts/alerts.module';
 import { DraftsModule } from './modules/drafts/drafts.module';
 import { HealthModule } from './modules/health/health.module';
+import { TrustModule } from './modules/trust/trust.module';
 import { UsersModule } from './modules/users/users.module';
 
 @Module({
   imports: [
     ConfigModule,
+    ClockModule,
     DatabaseModule,
     RateLimitModule,
     AuditModule,
     AuthModule,
     UsersModule,
     DraftsModule,
+    AlertsModule,
+    TrustModule,
     HealthModule,
   ],
   providers: [

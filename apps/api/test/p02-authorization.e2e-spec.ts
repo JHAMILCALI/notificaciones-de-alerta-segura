@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Role } from '@alertasegura/database';
 import {
+  AlertaResponseSchema,
   ApiErrorSchema,
   CSRF_HEADER,
   DraftListResponseSchema,
@@ -170,13 +171,18 @@ describe('P02b: usuarios autenticados sin derecho no publican', () => {
     expect(rows[0]?.metadata).toMatchObject({ reason: 'not_owner' });
   });
 
-  it('ISSUER propietario con CSRF → 501 SIGNER_UNAVAILABLE: no se publica ni se simula nada (transitorio hasta la entrega 3)', async () => {
+  it('ISSUER propietario con CSRF → 201 con la alerta firmada y ALERT_PUBLISHED (el 501 de la semana 1 ya no existe)', async () => {
+    const draft = await createDraftRow(t.prisma, owner.id);
     const { agent, csrfToken } = await loggedInBrowser(t, owner);
-    const res = await publish(agent, csrfToken).expect(501);
-    expect(ApiErrorSchema.parse(res.body)).toMatchObject({
-      statusCode: 501,
-      code: 'SIGNER_UNAVAILABLE',
+    const res = await publish(agent, csrfToken, draft.id).expect(201);
+    const { alerta } = AlertaResponseSchema.parse(res.body);
+    const rows = await auditRows(t.prisma, {
+      actorId: owner.id,
+      action: 'ALERT_PUBLISHED',
+      targetId: alerta.id,
     });
+    expect(rows).toHaveLength(1);
+    expect(rows[0]).toMatchObject({ outcome: 'SUCCESS', targetType: 'alerta' });
     // PUBLICATION_AUTHORIZED dejó de emitirse en la semana 2.
     expect(
       await auditRows(t.prisma, {
@@ -184,12 +190,10 @@ describe('P02b: usuarios autenticados sin derecho no publican', () => {
         action: 'PUBLICATION_AUTHORIZED',
       }),
     ).toHaveLength(0);
-    // El borrador sigue siendo un borrador, sin alerta publicada.
-    const draft = await t.prisma.draft.findUniqueOrThrow({
-      where: { id: draftId },
+    const saved = await t.prisma.draft.findUniqueOrThrow({
+      where: { id: draft.id },
     });
-    expect(draft.status).toBe('DRAFT');
-    expect(draft.alertaId).toBeNull();
+    expect(saved).toMatchObject({ status: 'PUBLISHED', alertaId: alerta.id });
   });
 
   it('sin CSRF → 403 CSRF_INVALID, incluso para el propietario (el CSRF va antes que el RBAC)', async () => {
@@ -228,10 +232,10 @@ describe('P02b: usuarios autenticados sin derecho no publican', () => {
       .set('Origin', 'https://evil.example')
       .expect(403);
     expect(res.body).toMatchObject({ code: 'CSRF_INVALID' });
-    const ok = await publish(agent, csrfToken)
+    const fresh = await createDraftRow(t.prisma, owner.id);
+    await publish(agent, csrfToken, fresh.id)
       .set('Origin', WEB_ORIGIN)
-      .expect(501);
-    expect(ok.body).toMatchObject({ code: 'SIGNER_UNAVAILABLE' });
+      .expect(201);
   });
 
   it('la cabecera CSRF sin la cookie correspondiente no basta (double-submit)', async () => {
