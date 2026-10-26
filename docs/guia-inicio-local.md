@@ -59,17 +59,23 @@ cp .env.example .env            # PowerShell: Copy-Item .env.example .env
 Abre `.env` y cambia **solo** esto:
 
 1. `POSTGRES_PASSWORD=` → una contraseña para la base local, por ejemplo `local-pg-2026`.
-2. `DATABASE_URL=` → pon **la misma** contraseña:
+2. `DATABASE_MIGRATION_URL=` → pon **la misma** contraseña (es la conexión del propietario, para migrar y sembrar):
    `postgresql://alertasegura:local-pg-2026@localhost:5432/alertasegura`
-3. `CSRF_SECRET=` → pega el resultado de:
+3. `APP_DB_PASSWORD=` → una contraseña **aparte, de 16 caracteres o más**, para el rol `alertasegura_app` con el que corre
+   la API. Pégala también en `DATABASE_URL=` (el usuario ya es `alertasegura_app`):
+   `postgresql://alertasegura_app:LA-MISMA-CONTRASEÑA@localhost:5432/alertasegura`
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(24).toString('base64url'))"
+   ```
+4. `CSRF_SECRET=` → pega el resultado de:
    ```bash
    node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
    ```
-4. `SEED_ADMIN_PASSWORD=`, `SEED_AUDITOR_PASSWORD=`, `SEED_ISSUER1_PASSWORD=`, `SEED_ISSUER2_PASSWORD=` → las contraseñas
+5. `SEED_ADMIN_PASSWORD=`, `SEED_AUDITOR_PASSWORD=`, `SEED_ISSUER1_PASSWORD=`, `SEED_ISSUER2_PASSWORD=` → las contraseñas
    con las que vas a entrar, **de 12 caracteres o más**. Anótalas.
 
 > **¿Tienes PostgreSQL instalado en Windows?** Ocupa el puerto 5432. Usa otro, por ejemplo 5433, en `POSTGRES_PORT=5433`
-> **y** en `DATABASE_URL` (`...@localhost:5433/...`). Para comprobar si está libre en PowerShell:
+> **y** en `DATABASE_MIGRATION_URL` y `DATABASE_URL` (`...@localhost:5433/...`). Para comprobar si está libre en PowerShell:
 > `Get-NetTCPConnection -LocalPort 5432 -State Listen` (si no muestra nada, está libre).
 
 El `.env` nunca se sube a Git (está en `.gitignore`).
@@ -110,9 +116,27 @@ debe aparecer `infra-postgres-1` con estado `(healthy)`.
 pnpm db:deploy
 ```
 
-Crea las tablas (`User`, `Session`, `Draft`, `AuditLog`) y los triggers que impiden modificar la auditoría.
+Crea las tablas (`User`, `Session`, `Draft`, `AuditLog` y, desde la semana 2, `AlertaPublicada`, `EventoAlerta`,
+`EstadoAlerta` y `ClavePublica`) y los triggers que impiden modificar la auditoría y las alertas firmadas.
+Usa el rol propietario (`DATABASE_MIGRATION_URL`).
 
-✅ Comprobación: muestra `2 migrations found` y `applied` la primera vez (o `No pending migrations to apply` si ya estaban).
+✅ Comprobación: muestra `migrations found` y `applied` la primera vez (o `No pending migrations to apply` si ya estaban).
+
+### 3 bis. Crea el rol de la API
+
+```bash
+pnpm db:roles
+```
+
+Crea (o actualiza) el rol `alertasegura_app` con la contraseña `APP_DB_PASSWORD`. Ese rol solo puede **leer e insertar** en
+las alertas publicadas, los eventos, los estados, las claves públicas y la auditoría: no puede modificarlas ni borrarlas
+(prueba P07). Es idempotente; **repítelo después de cada `pnpm db:deploy`** que añada tablas.
+
+✅ Comprobación: `[roles] alertasegura_app creado` (o `actualizado`) y una línea de permisos por tabla.
+
+> **Un solo rol para todo el servidor PostgreSQL.** `alertasegura_app` pertenece al servidor, no a una base: si trabajas con
+> varias bases (por ejemplo, un worktree por agente), usa la **misma** `APP_DB_PASSWORD` en todos los `.env`; si no, el
+> último `pnpm db:roles` cambia la contraseña de los demás.
 
 ### 4. Crea los usuarios (seed)
 
@@ -195,8 +219,44 @@ Repite pasos de la primera vez solo en estos casos:
 | Si… | Ejecuta |
 | --- | --- |
 | Hiciste `git pull` y cambiaron dependencias (`package.json` o `pnpm-lock.yaml`) | `pnpm install` y `pnpm build:packages` |
-| Llegaron migraciones nuevas (`packages/database/prisma/migrations`) | `pnpm db:deploy` |
+| Llegaron migraciones nuevas (`packages/database/prisma/migrations`) | `pnpm db:deploy` y `pnpm db:roles` |
+| Necesitas una cuenta de emisor nueva (ya no hay alta por HTTP) | `pnpm --filter @alertasegura/database lab issuer:add --email correo@ejemplo.bo --name "Nombre"` (la contraseña se pide sin mostrarla, o va en `LAB_ISSUER_PASSWORD`) |
 | Añadiste una contraseña `SEED_*` que antes faltaba | `pnpm db:seed` |
+
+## Semana 2: todo en Docker (perfil `g2`)
+
+Levanta PostgreSQL, las migraciones, el firmante y la API en contenedores, con las mismas restricciones que tendrá
+en producción: la API corre como el usuario `10002`, con el rol SQL `alertasegura_app` y **sin** la clave privada; solo
+el contenedor `signer` (usuario `10001`) la monta.
+
+Necesitas en el `.env`: `APP_DB_PASSWORD`, `CSRF_SECRET` y `SIGNER_PRIVATE_KEY_FILE` (ruta de la clave PEM PKCS#8 de
+laboratorio; está en `secrets/`, que Git ignora).
+
+```bash
+docker compose -f infra/compose.yml --env-file .env --profile g2 up -d --build
+```
+
+Qué ocurre, en orden: `postgres` (sano) → `migrate` (aplica las migraciones y crea el rol `alertasegura_app`, y termina) →
+`signer` (sano) → `api`. El perfil no cambia `pnpm db:up`, que sigue levantando solo PostgreSQL.
+
+✅ Comprobación: `docker compose -f infra/compose.yml --env-file .env --profile g2 ps` muestra `postgres`, `signer` y `api`
+en `healthy`, y `curl http://127.0.0.1:3000/api/v1/health` responde `{"status":"ok","database":"up"}`.
+
+Para publicar necesitas un emisor. El alta ya no es por HTTP; usa el comando de laboratorio contra la base del
+contenedor (el puerto es `POSTGRES_PORT`):
+
+```bash
+pnpm --filter @alertasegura/database lab issuer:add --email emisor@ejemplo.bo --name "Nombre del emisor"
+```
+
+Para apagarlo: `docker compose -f infra/compose.yml --env-file .env --profile g2 down` (añade `-v` para borrar también la
+base y el volumen del socket).
+
+> **Si ya tienes el PostgreSQL de `pnpm db:up` en marcha**, ejecuta el perfil con otro nombre de proyecto y otros puertos para
+> no pisarlo: `POSTGRES_PORT=5439 API_PORT=3190 docker compose -p alertasegura-g2 -f infra/compose.yml --env-file .env --profile g2 up -d --build`.
+
+**Pruebas de aislamiento incluidas:** `bash infra/scripts/p15-api-isolation.sh <contenedor-api>` (P15, lado API) y
+`pnpm --filter @alertasegura/database p07:evidence` (P07, con `DATABASE_URL` = el rol de la app).
 
 ## Apagar (en orden inverso)
 

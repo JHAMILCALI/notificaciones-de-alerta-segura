@@ -66,27 +66,38 @@ export class AuditService {
    */
   async record(entry: AuditRecord): Promise<void> {
     try {
-      await this.prisma.auditLog.create({
-        data: {
-          action: entry.action,
-          outcome: AuditOutcome[entry.outcome],
-          actorId: entry.actorId ?? null,
-          targetType: entry.targetType ?? null,
-          targetId: entry.targetId ?? null,
-          ip: entry.ip ?? (entry.req ? clientIp(entry.req) : null),
-          userAgent:
-            entry.userAgent ?? (entry.req ? userAgentOf(entry.req) : null),
-          metadata: sanitizeMetadata(
-            entry.metadata ?? {},
-          ) as Prisma.InputJsonObject,
-        },
-      });
+      await this.prisma.auditLog.create({ data: this.toData(entry) });
     } catch (error) {
       this.logger.error(
         `FALLO DE AUDITORIA action=${entry.action} outcome=${entry.outcome} actor=${entry.actorId ?? '-'}: ` +
           (error instanceof Error ? error.message : 'error desconocido'),
       );
     }
+  }
+
+  /**
+   * Registra un evento DENTRO de la transacción de la operación que audita (publicar, cancelar). A
+   * diferencia de `record`, un fallo no se silencia: propaga el error para que la transacción
+   * completa se deshaga, de modo que no exista una publicación sin su registro de auditoría.
+   */
+  async recordInTransaction(
+    tx: Prisma.TransactionClient,
+    entry: AuditRecord,
+  ): Promise<void> {
+    await tx.auditLog.create({ data: this.toData(entry) });
+  }
+
+  private toData(entry: AuditRecord): Prisma.AuditLogUncheckedCreateInput {
+    return {
+      action: entry.action,
+      outcome: AuditOutcome[entry.outcome],
+      actorId: entry.actorId ?? null,
+      targetType: entry.targetType ?? null,
+      targetId: entry.targetId ?? null,
+      ip: entry.ip ?? (entry.req ? clientIp(entry.req) : null),
+      userAgent: entry.userAgent ?? (entry.req ? userAgentOf(entry.req) : null),
+      metadata: sanitizeMetadata(entry.metadata ?? {}),
+    };
   }
 
   async list(limit: number): Promise<AuditEntry[]> {

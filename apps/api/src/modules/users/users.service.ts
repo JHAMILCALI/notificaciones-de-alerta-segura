@@ -1,14 +1,7 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Role } from '@alertasegura/database';
-import type {
-  ProvisionIssuerRequest,
-  UserListResponse,
-  UserSummary,
-} from '@alertasegura/shared';
-import { conflict } from '../../common/http/api-exception';
-import type { AuthenticatedUser } from '../../common/http/request-context';
+import { Role } from '@alertasegura/database';
+import type { UserListResponse, UserSummary } from '@alertasegura/shared';
 import { PrismaService } from '../../database/prisma.service';
-import { PasswordService } from '../auth/password.service';
 
 interface UserRow {
   id: string;
@@ -32,10 +25,7 @@ function toSummary(row: UserRow): UserSummary {
 
 @Injectable()
 export class UsersService {
-  constructor(
-    private readonly prisma: PrismaService,
-    private readonly passwords: PasswordService,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async list(): Promise<UserListResponse> {
     const rows = await this.prisma.user.findMany({
@@ -50,41 +40,5 @@ export class UsersService {
       },
     });
     return { users: rows.map(toSummary) };
-  }
-
-  /** El rol ISSUER lo fija el servidor; el cliente no puede elegirlo. */
-  async provisionIssuer(
-    dto: ProvisionIssuerRequest,
-    admin: AuthenticatedUser,
-  ): Promise<UserSummary> {
-    const passwordHash = await this.passwords.hash(dto.password);
-    try {
-      const row = await this.prisma.user.create({
-        data: {
-          email: dto.email,
-          displayName: dto.displayName,
-          passwordHash,
-          role: Role.ISSUER,
-          createdById: admin.id,
-        },
-        select: {
-          id: true,
-          email: true,
-          displayName: true,
-          role: true,
-          status: true,
-          createdAt: true,
-        },
-      });
-      return toSummary(row);
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === 'P2002'
-      ) {
-        throw conflict('Ya existe una cuenta con ese correo');
-      }
-      throw error;
-    }
   }
 }

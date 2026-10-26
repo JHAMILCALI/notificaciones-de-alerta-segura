@@ -7,11 +7,14 @@ import { PrismaService } from '../../database/prisma.service';
 function toDraft(row: DraftRow): Draft {
   return {
     id: row.id,
-    title: row.title,
-    body: row.body,
-    severity: row.severity,
+    tipo: row.tipo,
+    zona: { departamento: row.departamento, municipio: row.municipio },
+    severidad: row.severidad,
+    mensaje: row.mensaje,
+    vigenciaHoras: row.vigenciaHoras,
     status: row.status,
     ownerId: row.ownerId,
+    alertaId: row.alertaId,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -24,9 +27,12 @@ export class DraftsService {
   async create(dto: CreateDraftRequest, ownerId: string): Promise<Draft> {
     const row = await this.prisma.draft.create({
       data: {
-        title: dto.title,
-        body: dto.body,
-        severity: dto.severity,
+        tipo: dto.tipo,
+        departamento: dto.zona.departamento,
+        municipio: dto.zona.municipio,
+        severidad: dto.severidad,
+        mensaje: dto.mensaje,
+        vigenciaHoras: dto.vigenciaHoras,
         ownerId,
       },
     });

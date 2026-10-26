@@ -7,6 +7,9 @@
     "db:migrate": "prisma migrate dev",
     "db:deploy": "prisma migrate deploy",
     "db:seed": "tsx prisma/seed.ts",
+    "db:roles": "tsx prisma/roles.ts",
+    "lab": "tsx lab/lab.ts",
+    "p07:evidence": "tsx lab/p07-evidence.ts",
     "build": "prisma generate && tsc -p tsconfig.json",
     "typecheck": "prisma generate && tsc -p tsconfig.json --noEmit"
   },

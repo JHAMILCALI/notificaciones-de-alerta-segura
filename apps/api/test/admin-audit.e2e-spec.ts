@@ -1,5 +1,7 @@
+import { execFileSync } from 'node:child_process';
+import path from 'node:path';
 import { Logger } from '@nestjs/common';
-import { Role } from '@alertasegura/database';
+import { addIssuer, AddIssuerError, Role } from '@alertasegura/database';
 import {
   ApiErrorSchema,
   AuditListResponseSchema,
@@ -7,7 +9,6 @@ import {
   DraftListResponseSchema,
   DraftResponseSchema,
   HealthResponseSchema,
-  ProvisionIssuerResponseSchema,
   UserListResponseSchema,
 } from '@alertasegura/shared';
 import {
@@ -18,10 +19,11 @@ import {
   fetchCsrf,
   login,
   loggedInBrowser,
+  validDraftBody,
   type TestApp,
 } from './support/app';
 
-describe('Provisión de emisores (solo ADMIN)', () => {
+describe('D-1: los emisores se dan de alta solo con el comando de laboratorio', () => {
   let t: TestApp;
   beforeAll(async () => {
     t = await createTestApp();
@@ -36,76 +38,8 @@ describe('Provisión de emisores (solo ADMIN)', () => {
     password: 'contraseña-larga-segura-1',
   });
 
-  it('ADMIN con CSRF crea un ISSUER: 201, rol fijado por el servidor, Argon2id y auditoría', async () => {
-    const admin = await createUser(t.prisma, Role.ADMIN);
-    const { agent, csrfToken } = await loggedInBrowser(t, admin);
-    const body = newIssuer('ok');
-    const res = await agent
-      .post(`${API}/admin/issuers`)
-      .set(CSRF_HEADER, csrfToken)
-      .send(body)
-      .expect(201);
-    const { user } = ProvisionIssuerResponseSchema.parse(res.body);
-    expect(user).toMatchObject({
-      email: body.email,
-      displayName: body.displayName,
-      role: 'ISSUER',
-      status: 'ACTIVE',
-    });
-    expect(JSON.stringify(res.body)).not.toMatch(
-      /passwordHash|argon2|contraseña-larga/i,
-    );
-
-    const row = await t.prisma.user.findUniqueOrThrow({
-      where: { id: user.id },
-    });
-    expect(row.passwordHash.startsWith('$argon2id$')).toBe(true);
-    expect(row.createdById).toBe(admin.id);
-
-    const audit = await auditRows(t.prisma, {
-      actorId: admin.id,
-      action: 'ISSUER_PROVISIONED',
-    });
-    expect(audit).toHaveLength(1);
-    expect(audit[0]).toMatchObject({
-      outcome: 'SUCCESS',
-      targetType: 'user',
-      targetId: user.id,
-    });
-    expect(JSON.stringify(audit)).not.toContain(body.password);
-
-    // el emisor creado puede iniciar sesión
-    const issuerAgent = t.browser();
-    const { body: loginBody } = await login(issuerAgent, {
-      email: body.email,
-      password: body.password,
-    });
-    expect(loginBody.user.role).toBe('ISSUER');
-  });
-
-  it('un correo repetido (en cualquier capitalización) → 409 CONFLICT', async () => {
-    const admin = await createUser(t.prisma, Role.ADMIN);
-    const { agent, csrfToken } = await loggedInBrowser(t, admin);
-    const body = newIssuer('dup');
-    await agent
-      .post(`${API}/admin/issuers`)
-      .set(CSRF_HEADER, csrfToken)
-      .send(body)
-      .expect(201);
-    const res = await agent
-      .post(`${API}/admin/issuers`)
-      .set(CSRF_HEADER, csrfToken)
-      .send({ ...body, email: body.email.toUpperCase() })
-      .expect(409);
-    expect(ApiErrorSchema.parse(res.body)).toMatchObject({
-      statusCode: 409,
-      code: 'CONFLICT',
-    });
-  });
-
-  it.each([Role.ISSUER, Role.AUDITOR] as const)(
-    '%s no puede provisionar emisores → 403 FORBIDDEN',
-    async (role) => {
+  it('POST /admin/issuers → 404 para ADMIN (con CSRF), ISSUER, AUDITOR y anónimo; no se crea ninguna cuenta', async () => {
+    for (const role of [Role.ADMIN, Role.ISSUER, Role.AUDITOR] as const) {
       const u = await createUser(t.prisma, role);
       const { agent, csrfToken } = await loggedInBrowser(t, u);
       const body = newIssuer(role);
@@ -113,72 +47,164 @@ describe('Provisión de emisores (solo ADMIN)', () => {
         .post(`${API}/admin/issuers`)
         .set(CSRF_HEADER, csrfToken)
         .send(body)
-        .expect(403);
-      expect(res.body).toMatchObject({ code: 'FORBIDDEN' });
+        .expect(404);
+      expect(ApiErrorSchema.parse(res.body).code).toBe('NOT_FOUND');
       expect(
         await t.prisma.user.findUnique({ where: { email: body.email } }),
       ).toBeNull();
-      const audit = await auditRows(t.prisma, {
-        actorId: u.id,
-        action: 'ACCESS_DENIED',
-      });
-      expect(audit.length).toBeGreaterThan(0);
-    },
-  );
-
-  it('anónimo → 401 y ADMIN sin CSRF → 403 CSRF_INVALID', async () => {
-    await t
-      .browser()
-      .post(`${API}/admin/issuers`)
-      .send(newIssuer('anon'))
-      .expect(401);
-    const admin = await createUser(t.prisma, Role.ADMIN);
-    const { agent } = await loggedInBrowser(t, admin);
-    const res = await agent
-      .post(`${API}/admin/issuers`)
-      .send(newIssuer('nocsrf'))
-      .expect(403);
-    expect(res.body).toMatchObject({ code: 'CSRF_INVALID' });
-  });
-
-  it('un campo extra `role` (escalada de privilegios) → 400 VALIDATION_FAILED', async () => {
-    const admin = await createUser(t.prisma, Role.ADMIN);
-    const { agent, csrfToken } = await loggedInBrowser(t, admin);
-    const body = { ...newIssuer('role'), role: 'ADMIN' };
-    const res = await agent
-      .post(`${API}/admin/issuers`)
-      .set(CSRF_HEADER, csrfToken)
-      .send(body)
-      .expect(400);
-    const err = ApiErrorSchema.parse(res.body);
-    expect(err.code).toBe('VALIDATION_FAILED');
-    expect(err.issues?.length).toBeGreaterThan(0);
+    }
+    const anon = newIssuer('anon');
+    await t.browser().post(`${API}/admin/issuers`).send(anon).expect(404);
     expect(
-      await t.prisma.user.findUnique({ where: { email: body.email } }),
+      await t.prisma.user.findUnique({ where: { email: anon.email } }),
     ).toBeNull();
   });
 
-  it('entrada inválida → 400 con issues que no repiten los valores enviados', async () => {
-    const admin = await createUser(t.prisma, Role.ADMIN);
-    const { agent, csrfToken } = await loggedInBrowser(t, admin);
-    const secret = 'corta';
-    const res = await agent
-      .post(`${API}/admin/issuers`)
-      .set(CSRF_HEADER, csrfToken)
-      .send({ email: 'no-es-correo', displayName: 'x', password: secret })
-      .expect(400);
-    const err = ApiErrorSchema.parse(res.body);
-    expect(err.issues?.map((i) => i.path).sort()).toEqual([
-      'body.displayName',
-      'body.email',
-      'body.password',
-    ]);
-    expect(JSON.stringify(res.body)).not.toContain(secret);
-    expect(JSON.stringify(res.body)).not.toContain('no-es-correo');
-    await agent
-      .post(`${API}/admin/issuers`)
-      .set(CSRF_HEADER, csrfToken)
-      .expect(400); // sin cuerpo
+  it('addIssuer crea un ISSUER con Argon2id y audita ISSUER_PROVISIONED sin actor (lab-script)', async () => {
+    const input = newIssuer('lab');
+    const created = await addIssuer(t.prisma, {
+      ...input,
+      email: input.email.toUpperCase(),
+    });
+    expect(created).toMatchObject({
+      email: input.email, // se guarda en minúsculas
+      displayName: input.displayName,
+    });
+
+    const row = await t.prisma.user.findUniqueOrThrow({
+      where: { id: created.id },
+    });
+    expect(row).toMatchObject({
+      role: 'ISSUER',
+      status: 'ACTIVE',
+      createdById: null,
+    });
+    expect(row.passwordHash.startsWith('$argon2id$')).toBe(true);
+
+    const audit = await auditRows(t.prisma, {
+      action: 'ISSUER_PROVISIONED',
+      targetId: created.id,
+    });
+    expect(audit).toHaveLength(1);
+    expect(audit[0]).toMatchObject({
+      outcome: 'SUCCESS',
+      actorId: null,
+      targetType: 'user',
+    });
+    expect(audit[0]?.metadata).toMatchObject({
+      actor: 'lab-script',
+      email: input.email,
+      role: 'ISSUER',
+    });
+    expect(JSON.stringify(audit)).not.toContain(input.password);
+
+    // la cuenta creada puede iniciar sesión
+    const { body } = await login(t.browser(), input);
+    expect(body.user.role).toBe('ISSUER');
+  });
+
+  it('addIssuer rechaza un correo repetido (en cualquier capitalización) y entradas inválidas, sin dejar rastro', async () => {
+    const input = newIssuer('dup');
+    await addIssuer(t.prisma, input);
+    await expect(
+      addIssuer(t.prisma, { ...input, email: input.email.toUpperCase() }),
+    ).rejects.toThrow(AddIssuerError);
+
+    const bad = newIssuer('bad');
+    await expect(
+      addIssuer(t.prisma, { ...bad, email: 'no-es-correo' }),
+    ).rejects.toThrow(AddIssuerError);
+    await expect(
+      addIssuer(t.prisma, { ...bad, displayName: 'x' }),
+    ).rejects.toThrow(AddIssuerError);
+    await expect(
+      addIssuer(t.prisma, { ...bad, password: 'corta' }),
+    ).rejects.toThrow(AddIssuerError);
+    expect(
+      await t.prisma.user.findUnique({ where: { email: bad.email } }),
+    ).toBeNull();
+
+    // solo el alta correcta queda auditada; el duplicado no deja registro
+    const audit = await auditRows(t.prisma, { action: 'ISSUER_PROVISIONED' });
+    expect(
+      audit.filter(
+        (r) => (r.metadata as { email?: string }).email === input.email,
+      ),
+    ).toHaveLength(1);
+  });
+
+  describe('CLI: lab issuer:add', () => {
+    const databaseDir = path.resolve(__dirname, '../../../packages/database');
+    const runLab = (
+      args: string[],
+      opts: { input?: string; password?: string } = {},
+    ): string => {
+      const env: NodeJS.ProcessEnv = {
+        ...process.env,
+        DATABASE_URL: process.env.TEST_OWNER_DATABASE_URL,
+        DATABASE_MIGRATION_URL: process.env.TEST_OWNER_DATABASE_URL,
+      };
+      delete env.LAB_ISSUER_PASSWORD;
+      if (opts.password) env.LAB_ISSUER_PASSWORD = opts.password;
+      const tsxCli = require.resolve('tsx/cli', { paths: [databaseDir] });
+      return execFileSync(process.execPath, [tsxCli, 'lab/lab.ts', ...args], {
+        cwd: databaseDir,
+        env,
+        input: opts.input,
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
+    };
+
+    it('crea el emisor con la contraseña en LAB_ISSUER_PASSWORD y lo audita', async () => {
+      const input = newIssuer('cli-env');
+      const out = runLab(
+        ['issuer:add', '--email', input.email, '--name', input.displayName],
+        { password: input.password },
+      );
+      expect(out).toContain(input.email);
+      expect(out).not.toContain(input.password);
+
+      const user = await t.prisma.user.findUniqueOrThrow({
+        where: { email: input.email },
+      });
+      expect(user.role).toBe('ISSUER');
+      const audit = await auditRows(t.prisma, {
+        action: 'ISSUER_PROVISIONED',
+        targetId: user.id,
+      });
+      expect(audit).toHaveLength(1);
+      expect(audit[0]).toMatchObject({ actorId: null });
+      expect(audit[0]?.metadata).toMatchObject({ actor: 'lab-script' });
+    });
+
+    it('lee la contraseña de la entrada estándar', async () => {
+      const input = newIssuer('cli-stdin');
+      runLab(
+        ['issuer:add', '--email', input.email, '--name', input.displayName],
+        { input: `${input.password}\n` },
+      );
+      const { body } = await login(t.browser(), input);
+      expect(body.user.email).toBe(input.email);
+    });
+
+    it('no acepta la contraseña por argumento y no crea nada', async () => {
+      const input = newIssuer('cli-arg');
+      expect(() =>
+        runLab([
+          'issuer:add',
+          '--email',
+          input.email,
+          '--name',
+          input.displayName,
+          '--password',
+          input.password,
+        ]),
+      ).toThrow();
+      expect(
+        await t.prisma.user.findUnique({ where: { email: input.email } }),
+      ).toBeNull();
+    });
   });
 
   it('GET /admin/users: ADMIN lista sin passwordHash; AUDITOR e ISSUER → 403', async () => {
@@ -205,11 +231,7 @@ describe('Borradores y autorización por propiedad', () => {
     await t.close();
   });
 
-  const draftBody = {
-    title: 'Alerta de prueba',
-    body: 'Texto suficiente de la alerta de prueba',
-    severity: 'CRITICAL',
-  };
+  const draftBody = validDraftBody;
 
   it('ISSUER crea, lista y lee sus borradores; no ve los ajenos', async () => {
     const a = await createUser(t.prisma, Role.ISSUER);
@@ -227,6 +249,7 @@ describe('Borradores y autorización por propiedad', () => {
       ...draftBody,
       ownerId: a.id,
       status: 'DRAFT',
+      alertaId: null,
     });
 
     await B.agent
@@ -282,14 +305,23 @@ describe('Borradores y autorización por propiedad', () => {
         .post(`${API}/drafts`)
         .set(CSRF_HEADER, csrfToken)
         .send(payload as object);
-    await post({ ...draftBody, title: 'x' }).expect(400);
-    await post({ ...draftBody, severity: 'EXTREME' }).expect(400);
+    await post({ ...draftBody, mensaje: 'corto' }).expect(400);
+    await post({ ...draftBody, mensaje: 'm'.repeat(1001) }).expect(400);
+    await post({ ...draftBody, severidad: 'CRITICAL' }).expect(400); // nivel de la semana 1
+    await post({ ...draftBody, tipo: 'TERREMOTO' }).expect(400);
+    await post({
+      ...draftBody,
+      zona: { departamento: 'ATLANTIDA', municipio: null },
+    }).expect(400);
+    await post({ ...draftBody, vigenciaHoras: 0 }).expect(400);
+    await post({ ...draftBody, vigenciaHoras: 73 }).expect(400);
+    await post({ ...draftBody, vigenciaHoras: 1.5 }).expect(400);
+    await post({ ...draftBody, title: 'campo de la semana 1' }).expect(400);
     await post({
       ...draftBody,
       ownerId: '00000000-0000-4000-8000-000000000000',
     }).expect(400);
     await post({ ...draftBody, status: 'PUBLISHED' }).expect(400);
-    await post({ ...draftBody, body: 'b'.repeat(4001) }).expect(400);
     await agent.get(`${API}/drafts/no-es-uuid`).expect(400);
     expect(await t.prisma.draft.count({ where: { ownerId: u.id } })).toBe(0);
   });
@@ -374,7 +406,7 @@ describe('Auditoría: consulta y append-only', () => {
     }
   });
 
-  it('trigger append-only: UPDATE y DELETE sobre AuditLog fallan en PostgreSQL', async () => {
+  it('trigger append-only: UPDATE y DELETE sobre AuditLog fallan en PostgreSQL incluso para el propietario', async () => {
     const entry = await t.prisma.auditLog.create({
       data: {
         action: 'AUTH_LOGOUT',
@@ -383,26 +415,26 @@ describe('Auditoría: consulta y append-only', () => {
       },
     });
     await expect(
-      t.prisma.auditLog.update({
+      t.owner.auditLog.update({
         where: { id: entry.id },
         data: { action: 'ACCESS_DENIED' },
       }),
     ).rejects.toThrow(/append-only/i);
     await expect(
-      t.prisma.auditLog.delete({ where: { id: entry.id } }),
+      t.owner.auditLog.delete({ where: { id: entry.id } }),
     ).rejects.toThrow(/append-only/i);
     await expect(
-      t.prisma
+      t.owner
         .$executeRaw`UPDATE "AuditLog" SET "outcome" = 'DENIED' WHERE "id" = ${entry.id}::uuid`,
     ).rejects.toThrow(/append-only/i);
-    await expect(t.prisma.$executeRaw`DELETE FROM "AuditLog"`).rejects.toThrow(
+    await expect(t.owner.$executeRaw`DELETE FROM "AuditLog"`).rejects.toThrow(
       /append-only/i,
     );
-    await expect(t.prisma.auditLog.deleteMany({})).rejects.toThrow(
+    await expect(t.owner.auditLog.deleteMany({})).rejects.toThrow(
       /append-only/i,
     );
     await expect(
-      t.prisma.$executeRawUnsafe('TRUNCATE TABLE "AuditLog"'),
+      t.owner.$executeRawUnsafe('TRUNCATE TABLE "AuditLog"'),
     ).rejects.toThrow(/append-only/i);
     const still = await t.prisma.auditLog.findUniqueOrThrow({
       where: { id: entry.id },

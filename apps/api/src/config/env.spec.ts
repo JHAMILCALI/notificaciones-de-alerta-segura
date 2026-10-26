@@ -15,6 +15,7 @@ describe('loadConfig (validación con Zod, falla rápido)', () => {
     expect(config.session).toEqual({
       absoluteTtlMs: 8 * 3600_000,
       idleTtlMs: 30 * 60_000,
+      purgeIntervalMs: 60 * 60_000,
     });
     expect(config.rateLimits.loginIp).toEqual({ limit: 10, windowSeconds: 60 });
     expect(config.rateLimits.loginAccount).toEqual({
@@ -23,6 +24,37 @@ describe('loadConfig (validación con Zod, falla rápido)', () => {
     });
     expect(config.rateLimits.user).toEqual({ limit: 120, windowSeconds: 60 });
     expect(config.rateLimits.global).toEqual({ limit: 300, windowSeconds: 60 });
+    expect(config.rateLimits.publish).toEqual({
+      limit: 10,
+      windowSeconds: 3600,
+    });
+  });
+
+  it('configura el firmante y el manifiesto de confianza', () => {
+    const defaults = loadConfig({ ...valid });
+    expect(defaults.signer).toEqual({
+      socketPath: '/run/signer/signer.sock',
+      timeoutMs: 3000,
+    });
+    expect(defaults.trustManifestFile).toBeNull();
+    const pipe = String.raw`\\.\pipe\alertasegura-signer`; // named pipe de Windows
+    const custom = loadConfig({
+      ...valid,
+      SIGNER_SOCKET_PATH: pipe,
+      SIGNER_TIMEOUT_MS: '1500',
+      TRUST_MANIFEST_FILE: '  ./secrets/manifest.json ',
+    });
+    expect(custom.signer).toEqual({
+      socketPath: pipe,
+      timeoutMs: 1500,
+    });
+    expect(custom.trustManifestFile).toBe('./secrets/manifest.json');
+    expect(() => loadConfig({ ...valid, SIGNER_TIMEOUT_MS: '0' })).toThrow(
+      ConfigError,
+    );
+    expect(
+      loadConfig({ ...valid, TRUST_MANIFEST_FILE: '' }).trustManifestFile,
+    ).toBeNull();
   });
 
   it('exige CSRF_SECRET de al menos 32 bytes', () => {

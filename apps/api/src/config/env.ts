@@ -59,6 +59,8 @@ const EnvSchema = z.object({
 
   SESSION_ABSOLUTE_TTL_MINUTES: positiveInt.default(480),
   SESSION_IDLE_TTL_MINUTES: positiveInt.default(30),
+  /** Cada cuánto se purgan las sesiones caducadas o revocadas (por defecto, cada hora). */
+  SESSION_PURGE_INTERVAL_MINUTES: positiveInt.default(60),
 
   RATE_LOGIN_IP_LIMIT: positiveInt.default(10),
   RATE_LOGIN_IP_WINDOW_SECONDS: positiveInt.default(60),
@@ -68,6 +70,23 @@ const EnvSchema = z.object({
   RATE_USER_WINDOW_SECONDS: positiveInt.default(60),
   RATE_GLOBAL_LIMIT: positiveInt.default(300),
   RATE_GLOBAL_WINDOW_SECONDS: positiveInt.default(60),
+  /** Cuota de publicación por emisor: alertas publicadas por ventana (por defecto 10 por hora). */
+  RATE_PUBLISH_LIMIT: positiveInt.default(10),
+  RATE_PUBLISH_WINDOW_SECONDS: positiveInt.default(3600),
+
+  /** Socket Unix del firmante (en Windows, una named pipe \.pipealertasegura-signer). */
+  SIGNER_SOCKET_PATH: z
+    .string()
+    .trim()
+    .min(1)
+    .default('/run/signer/signer.sock'),
+  SIGNER_TIMEOUT_MS: positiveInt.default(3000),
+  /** Manifiesto de confianza firmado por la raíz (lo emite la CLI offline). Sin él, /trust/manifest da 503. */
+  TRUST_MANIFEST_FILE: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value ? value : null)),
 });
 
 export interface RateLimitRule {
@@ -84,13 +103,22 @@ export interface AppConfig {
   cookieSecure: boolean;
   trustProxy: false | number;
   bodyLimit: string;
-  session: { absoluteTtlMs: number; idleTtlMs: number };
+  session: {
+    absoluteTtlMs: number;
+    idleTtlMs: number;
+    purgeIntervalMs: number;
+  };
   rateLimits: {
     loginIp: RateLimitRule;
     loginAccount: RateLimitRule;
     user: RateLimitRule;
     global: RateLimitRule;
+    /** Cuota de publicación por emisor; se cuenta en la base, no en memoria. */
+    publish: RateLimitRule;
   };
+  signer: { socketPath: string; timeoutMs: number };
+  /** Ruta del manifiesto firmado; null si no está configurado. */
+  trustManifestFile: string | null;
 }
 
 export class ConfigError extends Error {
@@ -123,6 +151,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     session: {
       absoluteTtlMs: e.SESSION_ABSOLUTE_TTL_MINUTES * 60_000,
       idleTtlMs: e.SESSION_IDLE_TTL_MINUTES * 60_000,
+      purgeIntervalMs: e.SESSION_PURGE_INTERVAL_MINUTES * 60_000,
     },
     rateLimits: {
       loginIp: {
@@ -141,7 +170,16 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
         limit: e.RATE_GLOBAL_LIMIT,
         windowSeconds: e.RATE_GLOBAL_WINDOW_SECONDS,
       },
+      publish: {
+        limit: e.RATE_PUBLISH_LIMIT,
+        windowSeconds: e.RATE_PUBLISH_WINDOW_SECONDS,
+      },
     },
+    signer: {
+      socketPath: e.SIGNER_SOCKET_PATH,
+      timeoutMs: e.SIGNER_TIMEOUT_MS,
+    },
+    trustManifestFile: e.TRUST_MANIFEST_FILE,
   };
 }
 

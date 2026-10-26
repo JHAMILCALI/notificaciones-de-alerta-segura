@@ -1,0 +1,24 @@
+P07 — UPDATE/DELETE/TRUNCATE con el rol de la app
+fecha=2026-10-26T17:29:05Z usuario=alertasegura_app base=alertasegura superusuario=false
+
+Filas que hay que proteger (SELECT permitido):
+  AlertaPublicada  1 fila(s)
+  EventoAlerta     1 fila(s)
+  EstadoAlerta     2 fila(s)
+  AuditLog         5 fila(s)
+
+tabla            sentencia SQLSTATE mensaje
+AlertaPublicada  UPDATE    42501    permission denied for table AlertaPublicada
+AlertaPublicada  DELETE    42501    permission denied for table AlertaPublicada
+AlertaPublicada  TRUNCATE  42501    permission denied for table AlertaPublicada
+EventoAlerta     UPDATE    42501    permission denied for table EventoAlerta
+EventoAlerta     DELETE    42501    permission denied for table EventoAlerta
+EventoAlerta     TRUNCATE  42501    permission denied for table EventoAlerta
+EstadoAlerta     UPDATE    42501    permission denied for table EstadoAlerta
+EstadoAlerta     DELETE    42501    permission denied for table EstadoAlerta
+EstadoAlerta     TRUNCATE  42501    permission denied for table EstadoAlerta
+AuditLog         UPDATE    42501    permission denied for table AuditLog
+AuditLog         DELETE    42501    permission denied for table AuditLog
+AuditLog         TRUNCATE  42501    permission denied for table AuditLog
+
+RESULTADO: 12/12 sentencias rechazadas con 42501 (permission denied). P07 APROBADA.

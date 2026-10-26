@@ -1,0 +1,31 @@
+S2-27 — perfil g2 de Docker: publicación de punta a punta con el firmante real
+fecha=2026-10-26T17:29:59Z api=s2/shiro sobre 826e023 + entrega 4 firmante=imagen construida desde s2/moto@5703a18 (clave de laboratorio efímera)
+
+== docker compose ps (proyecto shiro-g2)
+NAMES                 STATUS                   PORTS
+shiro-g2-api-1        Up 2 minutes (healthy)   127.0.0.1:3190->3000/tcp
+shiro-g2-postgres-1   Up 2 minutes (healthy)   0.0.0.0:5439->5432/tcp, [::]:5439->5432/tcp
+shiro-g2-signer-1     Up 2 minutes (healthy)   
+
+== endurecimiento del contenedor api
+User=10002:10002 GroupAdd=[10001] ReadonlyRootfs=true CapDrop=[ALL] SecurityOpt=[no-new-privileges:true]
+montajes de api: /run/signer 
+montajes de signer: /run/secrets/signer-private-key.pem /run/signer 
+redes de signer: shiro-g2_signer_internal  | puertos publicados de signer: 0
+
+== prueba de punta a punta (login -> borrador -> publicar -> verificar -> cancelar -> leer)
+$ tsx lab/lab.ts issuer:add --email g2-e2c36c@lab.local --name Emisor-G2-Lab
+[lab] emisor creado: <correo> (id 88bb7d09-b8a2-496d-b3ad-041b7bb27980). Auditado como ISSUER_PROVISIONED.
+OK   GET /health
+OK   login del emisor — rol ISSUER
+OK   crear borrador
+OK   publicar con el firmante real → 201 — status 201
+OK   ALERTA: canónico, hash, key_id y firma verifican con @alertasegura/verification — {"canonical":true,"hash":true,"kid":true,"sig":true}
+OK   ESTADO inicial: canónico, hash, key_id y firma verifican con @alertasegura/verification — {"canonical":true,"hash":true,"kid":true,"sig":true}
+OK   GET /alerts/:id público
+OK   publicar otra vez → 409
+OK   cancelar → 201 — status 201
+OK   EVENTO verifica y apunta a la alerta
+OK   ESTADO CANCELADA secuencia 1 encadenado al evento
+OK   GET /alerts público
+{"alertaId":"6cf7cd51-a288-4743-a61f-f6ecfb2b4396","keyId":"CUZlh69XV8olaVpY2fqRqib9aiXdrEMO7D-btjnXLYM"}

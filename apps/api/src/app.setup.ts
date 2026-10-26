@@ -17,7 +17,21 @@ export async function configureApp(app: NestExpressApplication): Promise<void> {
   app.setGlobalPrefix(API_PREFIX.replace(/^\//, ''));
   app.disable('x-powered-by');
   app.set('trust proxy', config.trustProxy);
-  app.use(helmet());
+  // La API solo devuelve JSON: ninguna respuesta debe poder cargar recursos, incrustarse ni enviar formularios.
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        useDefaults: false,
+        directives: {
+          defaultSrc: ["'none'"],
+          frameAncestors: ["'none'"],
+          baseUri: ["'none'"],
+          formAction: ["'none'"],
+        },
+      },
+      crossOriginResourcePolicy: { policy: 'same-origin' },
+    }),
+  );
   app.use((_req: Request, res: Response, next: NextFunction) => {
     // Las respuestas de la API llevan datos de sesión o personales: nada se cachea.
     res.setHeader('Cache-Control', 'no-store');

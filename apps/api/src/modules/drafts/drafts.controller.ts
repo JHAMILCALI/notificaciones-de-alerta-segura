@@ -1,12 +1,12 @@
 import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import type { z } from 'zod';
 import {
   CreateDraftRequestSchema,
   DraftIdParamSchema,
-  DraftListResponseSchema,
-  DraftResponseSchema,
   type CreateDraftRequest,
+  type AlertaResponse,
+  type DraftListResponse,
+  type DraftResponse,
 } from '@alertasegura/shared';
 import {
   CurrentUser,
@@ -16,21 +16,19 @@ import {
   ValidBody,
   ValidParams,
 } from '../../common/decorators/metadata';
-import { ApiException } from '../../common/http/api-exception';
 import type { AuthenticatedUser } from '../../common/http/request-context';
+import { AlertsService } from '../alerts/alerts.service';
+import { PublishQuotaGuard } from '../alerts/publish-quota.guard';
 import { AuditService } from '../audit/audit.service';
 import { DraftOwnershipGuard } from './draft-ownership.guard';
 import { DraftsService } from './drafts.service';
-
-// shared exporta los esquemas pero no estos dos tipos (cambio de contrato menor solicitado).
-type DraftResponse = z.infer<typeof DraftResponseSchema>;
-type DraftListResponse = z.infer<typeof DraftListResponseSchema>;
 
 @Controller('drafts')
 export class DraftsController {
   constructor(
     private readonly drafts: DraftsService,
     private readonly audit: AuditService,
+    private readonly alerts: AlertsService,
   ) {}
 
   @RequirePermissions('drafts:create')
@@ -49,7 +47,11 @@ export class DraftsController {
       targetType: 'draft',
       targetId: draft.id,
       req,
-      metadata: { severity: draft.severity },
+      metadata: {
+        tipo: draft.tipo,
+        departamento: draft.zona.departamento,
+        severidad: draft.severidad,
+      },
     });
     return { draft };
   }
@@ -72,37 +74,21 @@ export class DraftsController {
   }
 
   /**
-   * Semana 1: superados rate limiting, sesión, CSRF, validación, RBAC y propiedad, se deja
-   * constancia de la autorización y se responde 501. La firma aislada es de la semana 2;
-   * no se simula nada.
+   * Publicación atómica y firmada (api-contract-semana2.md). Los controles anteriores (rate limiting, sesión,
+   * CSRF, validación, RBAC y propiedad) ya se superaron y la cuota se comprueba antes de firmar; la firma, la transacción y la auditoría están en
+   * AlertsService.
    */
   @RequirePermissions('alerts:publish')
   @DeniedAction('PUBLICATION_DENIED')
   @Validate({ params: DraftIdParamSchema })
-  @UseGuards(DraftOwnershipGuard)
+  @UseGuards(DraftOwnershipGuard, PublishQuotaGuard)
   @Post(':draftId/publish')
-  async publish(
+  publish(
     @ValidParams() params: unknown,
     @CurrentUser() user: AuthenticatedUser,
     @Req() req: Request,
-  ): Promise<never> {
+  ): Promise<AlertaResponse> {
     const { draftId } = params as { draftId: string };
-    await this.audit.record({
-      action: 'PUBLICATION_AUTHORIZED',
-      outcome: 'SUCCESS',
-      actorId: user.id,
-      targetType: 'draft',
-      targetId: draftId,
-      req,
-      metadata: {
-        signed: false,
-        note: 'publicación firmada pendiente (semana 2)',
-      },
-    });
-    throw new ApiException(
-      501,
-      'PUBLICATION_NOT_IMPLEMENTED',
-      'La publicación firmada aún no está implementada',
-    );
+    return this.alerts.publish(draftId, user, req);
   }
 }

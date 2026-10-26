@@ -1,0 +1,11 @@
+P15 — aislamiento de la clave privada del firmante respecto de la API
+fecha=2026-10-26T17:29:35Z imagen=shiro-g2-api contenedor=shiro-g2-api-1
+
+PASS  A1. el contenedor api corre como el usuario 10002 (grupos: 10002 10001)
+PASS  A2. el contenedor api no monta ninguna ruta de secretos (montajes: /run/signer )
+PASS  A3. node -e "fs.readFileSync('/run/secrets/signer-private-key.pem')" desde api → ENOENT (la clave no está montada)
+      (clave de prueba efímera en un volumen: dueño:grupo y modo = 10001:10001 400)
+PASS  B.  con la clave montada (10001:10001, 0400), api (10002 + grupo 10001) → EACCES
+PASS  C.  control: el usuario 10001 (firmante) sí la lee → LEIDA
+
+RESULTADO: P15 (lado API) APROBADA — ENOENT por no estar montada y EACCES aunque se montara.

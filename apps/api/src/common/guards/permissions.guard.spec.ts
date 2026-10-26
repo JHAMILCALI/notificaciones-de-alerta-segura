@@ -21,12 +21,14 @@ import { PermissionsGuard } from './permissions.guard';
 @Controller('x')
 class Dummy {
   @RequirePermissions('users:read') usersRead(): void {}
-  @RequirePermissions('issuers:provision') provision(): void {}
   @RequirePermissions('drafts:create') draftsCreate(): void {}
   @RequirePermissions('drafts:read-own') draftsRead(): void {}
   @RequirePermissions('alerts:publish')
   @DeniedAction('PUBLICATION_DENIED')
   publish(): void {}
+  @RequirePermissions('alerts:cancel')
+  @DeniedAction('CANCEL_DENIED')
+  cancel(): void {}
   @RequirePermissions('audit:read') auditRead(): void {}
   @RequirePermissions('drafts:create', 'alerts:publish') both(): void {}
   @AnyRole() any(): void {}
@@ -36,10 +38,10 @@ class Dummy {
 
 const handlerFor: Record<Permission, keyof Dummy> = {
   'users:read': 'usersRead',
-  'issuers:provision': 'provision',
   'drafts:create': 'draftsCreate',
   'drafts:read-own': 'draftsRead',
   'alerts:publish': 'publish',
+  'alerts:cancel': 'cancel',
   'audit:read': 'auditRead',
 };
 
