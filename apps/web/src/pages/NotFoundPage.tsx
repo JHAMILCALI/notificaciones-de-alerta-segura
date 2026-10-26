@@ -5,7 +5,7 @@ export function NotFoundPage() {
     <section className="card" aria-labelledby="nf-title">
       <h1 id="nf-title">Página no encontrada</h1>
       <p>
-        <Link to="/">Volver al inicio</Link>
+        <Link to="/alertas">Volver a las alertas</Link>
       </p>
     </section>
   )

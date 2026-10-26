@@ -1,4 +1,14 @@
 export { base64UrlToBytes, bytesToBase64Url } from './base64url.ts';
+export {
+  canonicalBytes,
+  verifyCancelacion,
+  verifyDocument,
+  verifyManifest,
+  type DocumentosPorTipo,
+  type TipoDocFirmante,
+  type VerifyDocumentInput,
+  type VerifyManifestInput,
+} from './documents.ts';
 export { canonicalize } from './canonicalize.ts';
 export {
   CanonicalizationError,

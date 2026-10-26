@@ -4,13 +4,48 @@ import { adminUser, calls, errorResponse, jsonResponse, makeFetch } from '../tes
 
 const draft = {
   id: '6c1f9d52-8b0e-4a77-b3a1-0e5d2f9c7a10',
-  title: 'Aviso de prueba',
-  body: 'Cuerpo del borrador de prueba',
-  severity: 'INFO',
+  tipo: 'HELADA',
+  zona: { departamento: 'ORURO', municipio: null },
+  severidad: 'AMARILLA',
+  mensaje: 'Cuerpo del borrador de prueba',
+  vigenciaHoras: 24,
   status: 'DRAFT',
   ownerId: adminUser.id,
+  alertaId: null,
   createdAt: '2026-10-19T12:00:00.000Z',
   updatedAt: '2026-10-19T12:00:00.000Z',
+}
+
+const draftInput = {
+  tipo: 'HELADA',
+  zona: { departamento: 'ORURO', municipio: null },
+  severidad: 'AMARILLA',
+  mensaje: 'Cuerpo del borrador de prueba',
+  vigenciaHoras: 24,
+} as const
+
+const envelope = {
+  payload_canonico: 'e30',
+  hash_payload: 'a'.repeat(64),
+  firma: 'A'.repeat(86),
+  key_id: 'B'.repeat(43),
+}
+const ALERTA_ID = '0a4c7e19-5d2b-4f83-9c61-7e2b8d3a1f55'
+const alertaPublicada = {
+  id: ALERTA_ID,
+  emisorId: adminUser.id,
+  publishedAt: '2026-10-19T12:05:00.000Z',
+  resumen: {
+    tipo: 'HELADA',
+    zona: { departamento: 'ORURO', municipio: null },
+    severidad: 'AMARILLA',
+    mensaje: 'Cuerpo del borrador de prueba',
+    emitida_en: '2026-10-19T12:05:00Z',
+    expira_en: '2026-10-20T12:05:00Z',
+  },
+  alerta: envelope,
+  eventos: [],
+  estado: envelope,
 }
 
 describe('cliente API: CSRF', () => {
@@ -21,7 +56,7 @@ describe('cliente API: CSRF', () => {
     })
     const client = createApiClient({ fetch: fetchMock })
 
-    await client.createDraft({ title: 'Aviso de prueba', body: 'Cuerpo del borrador de prueba', severity: 'INFO' })
+    await client.createDraft(draftInput)
 
     const recorded = calls(fetchMock)
     expect(recorded.map((c) => `${c.method} ${c.url}`)).toEqual(['GET /api/v1/auth/csrf', 'POST /api/v1/drafts'])
@@ -38,9 +73,8 @@ describe('cliente API: CSRF', () => {
       call.url.endsWith('/auth/csrf') ? jsonResponse({ csrfToken: 'tok-1' }) : jsonResponse({ draft }, { status: 201 }),
     )
     const client = createApiClient({ fetch: fetchMock })
-    const input = { title: 'Aviso de prueba', body: 'Cuerpo del borrador de prueba', severity: 'INFO' } as const
-    await client.createDraft(input)
-    await client.createDraft(input)
+    await client.createDraft(draftInput)
+    await client.createDraft(draftInput)
     expect(calls(fetchMock).filter((c) => c.url.endsWith('/auth/csrf'))).toHaveLength(1)
   })
 
@@ -55,11 +89,7 @@ describe('cliente API: CSRF', () => {
     })
     const client = createApiClient({ fetch: fetchMock })
 
-    const created = await client.createDraft({
-      title: 'Aviso de prueba',
-      body: 'Cuerpo del borrador de prueba',
-      severity: 'INFO',
-    })
+    const created = await client.createDraft(draftInput)
 
     expect(created.id).toBe(draft.id)
     const recorded = calls(fetchMock)
@@ -80,7 +110,7 @@ describe('cliente API: CSRF', () => {
     )
     const client = createApiClient({ fetch: fetchMock })
     const failure = await client
-      .createDraft({ title: 'Aviso de prueba', body: 'Cuerpo del borrador de prueba', severity: 'INFO' })
+      .createDraft(draftInput)
       .catch((e: unknown) => e)
     expect(failure).toBeInstanceOf(ApiError)
     expect((failure as ApiError).code).toBe('CSRF_INVALID')
@@ -114,7 +144,7 @@ describe('cliente API: CSRF', () => {
       call.url.endsWith('/auth/csrf') ? jsonResponse({ csrfToken: 'tok-x' }) : jsonResponse({ draft }, { status: 201 }),
     )
     const client = createApiClient({ fetch: fetchMock })
-    await client.createDraft({ title: 'Aviso de prueba', body: 'Cuerpo del borrador de prueba', severity: 'INFO' })
+    await client.createDraft(draftInput)
     expect(localStorage.length).toBe(0)
     expect(sessionStorage.length).toBe(0)
   })
@@ -185,5 +215,63 @@ describe('cliente API: errores y contrato', () => {
     const users = await client.listUsers()
     expect(users).toHaveLength(1)
     expect(calls(fetchMock)[0]?.url).toBe('/api/v1/admin/users')
+  })
+})
+
+describe('cliente API: publicar y cancelar', () => {
+  it('publishDraft hace POST /drafts/:id/publish con CSRF y devuelve la alerta (201)', async () => {
+    const fetchMock = makeFetch((call) =>
+      call.url.endsWith('/auth/csrf')
+        ? jsonResponse({ csrfToken: 'tok-p' })
+        : jsonResponse({ alerta: alertaPublicada }, { status: 201 }),
+    )
+    const client = createApiClient({ fetch: fetchMock })
+    const alerta = await client.publishDraft(draft.id)
+    expect(alerta.id).toBe(ALERTA_ID)
+    const post = calls(fetchMock).find((c) => c.method === 'POST')
+    expect(post?.url).toBe(`/api/v1/drafts/${draft.id}/publish`)
+    expect(post?.headers.get('X-CSRF-Token')).toBe('tok-p')
+    expect(post?.body).toBeNull()
+  })
+
+  it('publishDraft expone SIGNER_UNAVAILABLE (503) y CONFLICT (409) como ApiError', async () => {
+    const fetchMock = makeFetch((call) => {
+      if (call.url.endsWith('/auth/csrf')) return jsonResponse({ csrfToken: 'tok-p' })
+      return errorResponse(503, 'SIGNER_UNAVAILABLE', 'Firmante no disponible')
+    })
+    const client = createApiClient({ fetch: fetchMock })
+    const failure = (await client.publishDraft(draft.id).catch((e: unknown) => e)) as ApiError
+    expect(failure).toBeInstanceOf(ApiError)
+    expect(failure.status).toBe(503)
+    expect(failure.code).toBe('SIGNER_UNAVAILABLE')
+
+    const conflict = createApiClient({
+      fetch: makeFetch((call) =>
+        call.url.endsWith('/auth/csrf') ? jsonResponse({ csrfToken: 't' }) : errorResponse(409, 'CONFLICT', 'Ya publicado'),
+      ),
+    })
+    expect(((await conflict.publishDraft(draft.id).catch((e: unknown) => e)) as ApiError).code).toBe('CONFLICT')
+  })
+
+  it('cancelAlert hace POST /alerts/:id/cancel con cuerpo {} y CSRF', async () => {
+    const fetchMock = makeFetch((call) =>
+      call.url.endsWith('/auth/csrf')
+        ? jsonResponse({ csrfToken: 'tok-c' })
+        : jsonResponse({ alerta: alertaPublicada }, { status: 201 }),
+    )
+    const client = createApiClient({ fetch: fetchMock })
+    await client.cancelAlert(ALERTA_ID)
+    const post = calls(fetchMock).find((c) => c.method === 'POST')
+    expect(post?.url).toBe(`/api/v1/alerts/${ALERTA_ID}/cancel`)
+    expect(post?.headers.get('X-CSRF-Token')).toBe('tok-c')
+    expect(post?.body).toBe('{}')
+  })
+
+  it('una respuesta que no cumple el contrato se trata como INVALID_RESPONSE', async () => {
+    const fetchMock = makeFetch((call) =>
+      call.url.endsWith('/auth/csrf') ? jsonResponse({ csrfToken: 't' }) : jsonResponse({ alerta: { id: 'x' } }, { status: 201 }),
+    )
+    const client = createApiClient({ fetch: fetchMock })
+    expect(((await client.publishDraft(draft.id).catch((e: unknown) => e)) as ApiError).code).toBe('INVALID_RESPONSE')
   })
 })

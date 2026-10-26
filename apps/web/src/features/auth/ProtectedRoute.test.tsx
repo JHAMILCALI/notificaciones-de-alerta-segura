@@ -11,10 +11,10 @@ const issuerUser = {
   permissions: ['drafts:create', 'drafts:read-own', 'alerts:publish'] as const,
 }
 
-describe('ruta protegida /panel', () => {
+describe('ruta protegida /admin', () => {
   it('redirige a /login cuando /auth/me devuelve 401', async () => {
     const fetchMock = makeFetch(() => errorResponse(401, 'UNAUTHENTICATED', 'Sesión requerida'))
-    renderApp({ fetchMock, route: '/panel' })
+    renderApp({ fetchMock, route: '/admin' })
 
     expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeInTheDocument()
     expect(screen.queryByRole('heading', { name: 'Panel' })).not.toBeInTheDocument()
@@ -23,34 +23,34 @@ describe('ruta protegida /panel', () => {
 
   it('una subruta protegida también redirige a /login', async () => {
     const fetchMock = makeFetch(() => errorResponse(401, 'UNAUTHENTICATED', 'Sesión requerida'))
-    renderApp({ fetchMock, route: '/panel/usuarios' })
+    renderApp({ fetchMock, route: '/admin/usuarios' })
     expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeInTheDocument()
   })
 
   it('muestra "comprobando sesión" mientras /auth/me está pendiente', () => {
     const fetchMock = makeFetch(() => new Promise<Response>(() => undefined))
-    renderApp({ fetchMock, route: '/panel' })
+    renderApp({ fetchMock, route: '/admin' })
     expect(screen.getByText('Comprobando sesión…')).toBeInTheDocument()
   })
 
   it('con sesión válida muestra el panel', async () => {
     const fetchMock = makeFetch(() => jsonResponse({ user: adminUser }))
-    renderApp({ fetchMock, route: '/panel' })
+    renderApp({ fetchMock, route: '/admin' })
     expect(await screen.findByRole('heading', { name: 'Panel' })).toBeInTheDocument()
   })
 
   it('un emisor ve borradores pero no usuarios ni auditoría; la ruta sin permiso informa acceso no permitido', async () => {
     const fetchMock = makeFetch(() => jsonResponse({ user: issuerUser }))
-    renderApp({ fetchMock, route: '/panel' })
+    renderApp({ fetchMock, route: '/admin' })
 
     expect(await screen.findByRole('link', { name: 'Borradores' })).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Usuarios' })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Auditoría' })).not.toBeInTheDocument()
   })
 
-  it('un emisor que abre /panel/usuarios ve "Acceso no permitido" y no se llama a la API de usuarios', async () => {
+  it('un emisor que abre /admin/usuarios ve "Acceso no permitido" y no se llama a la API de usuarios', async () => {
     const fetchMock = makeFetch(() => jsonResponse({ user: issuerUser }))
-    renderApp({ fetchMock, route: '/panel/usuarios' })
+    renderApp({ fetchMock, route: '/admin/usuarios' })
     expect(await screen.findByRole('heading', { name: 'Acceso no permitido' })).toBeInTheDocument()
     expect(calls(fetchMock).some((c) => c.url.endsWith('/admin/users'))).toBe(false)
   })
@@ -71,7 +71,7 @@ describe('ruta protegida /panel', () => {
         ],
       })
     })
-    renderApp({ fetchMock, route: '/panel/usuarios' })
+    renderApp({ fetchMock, route: '/admin/usuarios' })
     expect(await screen.findByText('emisor@alertasegura.test')).toBeInTheDocument()
     expect(screen.getByRole('columnheader', { name: 'Rol' })).toBeInTheDocument()
   })
@@ -84,7 +84,7 @@ describe('ruta protegida /panel', () => {
       if (call.url.endsWith('/auth/csrf')) return jsonResponse({ csrfToken: `tok-${++csrfCalls}` })
       return new Response(null, { status: 204 })
     })
-    renderApp({ fetchMock, route: '/panel' })
+    renderApp({ fetchMock, route: '/admin' })
 
     await user.click(await screen.findByRole('button', { name: 'Salir' }))
 
@@ -101,7 +101,7 @@ describe('ruta protegida /panel', () => {
       if (call.url.endsWith('/auth/me')) return jsonResponse({ user: adminUser })
       return errorResponse(401, 'UNAUTHENTICATED', 'Sesión requerida')
     })
-    renderApp({ fetchMock, route: '/panel/usuarios' })
+    renderApp({ fetchMock, route: '/admin/usuarios' })
     expect(await screen.findByRole('heading', { name: 'Iniciar sesión' })).toBeInTheDocument()
   })
 })

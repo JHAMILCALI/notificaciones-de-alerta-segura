@@ -1,6 +1,7 @@
 import {
   API_PREFIX,
   ApiErrorSchema,
+  AlertaResponseSchema,
   AuditListResponseSchema,
   CreateDraftRequestSchema,
   CsrfResponseSchema,
@@ -11,6 +12,7 @@ import {
   LoginResponseSchema,
   MeResponseSchema,
   UserListResponseSchema,
+  type AlertaPublicada,
   type ApiErrorCode,
   type AuditListResponse,
   type CreateDraftRequest,
@@ -66,6 +68,10 @@ export interface ApiClient {
   listUsers(): Promise<UserSummary[]>
   listDrafts(): Promise<Draft[]>
   createDraft(input: CreateDraftRequest): Promise<Draft>
+  /** Firma y publica el borrador (201). 409 si ya estaba publicado; 503 SIGNER_UNAVAILABLE sin efectos. */
+  publishDraft(draftId: string): Promise<AlertaPublicada>
+  /** Cancela una alerta propia (201): el servidor firma el evento y el nuevo estado. */
+  cancelAlert(alertaId: string): Promise<AlertaPublicada>
   listAudit(limit?: number): Promise<AuditListResponse['entries']>
   /** Se invoca cuando una petición autenticada devuelve 401 UNAUTHENTICATED (sesión caducada). */
   onUnauthenticated(listener: () => void): () => void
@@ -280,6 +286,16 @@ export function createApiClient(options: ApiClientOptions = {}): ApiClient {
       return (
         await guarded({ method: 'POST', path: '/drafts', body, schema: DraftResponseSchema })
       ).draft
+    },
+
+    async publishDraft(draftId) {
+      const path = `/drafts/${encodeURIComponent(draftId)}/publish`
+      return (await guarded({ method: 'POST', path, schema: AlertaResponseSchema })).alerta
+    },
+
+    async cancelAlert(alertaId) {
+      const path = `/alerts/${encodeURIComponent(alertaId)}/cancel`
+      return (await guarded({ method: 'POST', path, body: {}, schema: AlertaResponseSchema })).alerta
     },
 
     async listAudit(limit) {

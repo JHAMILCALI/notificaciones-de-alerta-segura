@@ -16,7 +16,8 @@
     "dev": "tsc -p tsconfig.build.json --watch",
     "typecheck": "tsc -p tsconfig.json",
     "test": "vitest run",
-    "vectors": "node scripts/generate-p13-vectors.ts"
+    "vectors": "node scripts/generate-p13-vectors.ts",
+    "vectors:p16": "node scripts/generate-p16-vectors.ts"
   },
   "dependencies": {
     "@alertasegura/shared": "workspace:*"

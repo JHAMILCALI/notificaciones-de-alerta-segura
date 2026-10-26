@@ -10,7 +10,7 @@ function redirectTarget(state: unknown): string {
     // Solo rutas internas absolutas; evita redirecciones abiertas.
     if (typeof from === 'string' && from.startsWith('/') && !from.startsWith('//')) return from
   }
-  return '/panel'
+  return '/admin'
 }
 
 export function LoginPage() {
