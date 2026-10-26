@@ -5,3 +5,4 @@
 **/dist
 **/coverage
 infra/secrets
+.worktrees
