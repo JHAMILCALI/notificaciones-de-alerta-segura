@@ -32,7 +32,11 @@ export type VerificationErrorCode =
   | 'MANIFEST_EXPIRED'
   | 'MANIFEST_TOO_LONG'
   | 'MANIFEST_VERSION_TOO_LOW'
-  | 'MANIFEST_INCONSISTENT';
+  | 'MANIFEST_INCONSISTENT'
+  // Cancelación (EVENTO sobre una ALERTA)
+  | 'CANCELACION_ALERTA_MISMATCH'
+  | 'CANCELACION_HASH_MISMATCH'
+  | 'CANCELACION_EMISOR_MISMATCH';
 
 export class VerificationError extends Error {
   readonly code: VerificationErrorCode;

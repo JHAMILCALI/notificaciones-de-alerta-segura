@@ -196,6 +196,33 @@ export async function verifyManifest(input: VerifyManifestInput): Promise<Manifi
   return manifest;
 }
 
+/**
+ * Verifica que un EVENTO de cancelación es legítimo para su ALERTA (P06). Ambos documentos deben
+ * verificar con la misma clave y además: el evento nombra la misma `alerta_id`, su `hash_alerta` es el
+ * SHA-256 de los bytes exactos de la ALERTA (`hash_payload`) y lo emite el mismo `emisor_id`.
+ * Lanza `VerificationError`; devuelve ambos documentos solo si todo pasa.
+ */
+export async function verifyCancelacion(
+  alertaEnvelope: unknown,
+  eventoEnvelope: unknown,
+  jwk: unknown,
+): Promise<{ alerta: AlertaDocumento; evento: EventoDocumento }> {
+  const alerta = await verifyDocument({ envelope: alertaEnvelope, jwk, tipoEsperado: 'ALERTA' });
+  const evento = await verifyDocument({ envelope: eventoEnvelope, jwk, tipoEsperado: 'EVENTO' });
+  if (evento.alerta_id !== alerta.alerta_id) {
+    throw new VerificationError('CANCELACION_ALERTA_MISMATCH', 'El evento no corresponde a esta alerta');
+  }
+  // verifyDocument ya validó el sobre de la alerta: su hash_payload es el SHA-256 de los bytes firmados.
+  const { hash_payload: hashAlerta } = alertaEnvelope as { hash_payload: string };
+  if (evento.hash_alerta !== hashAlerta) {
+    throw new VerificationError('CANCELACION_HASH_MISMATCH', 'hash_alerta no coincide con los bytes de la alerta');
+  }
+  if (evento.emisor_id !== alerta.emisor_id) {
+    throw new VerificationError('CANCELACION_EMISOR_MISMATCH', 'El evento lo emite otro emisor distinto del de la alerta');
+  }
+  return { alerta, evento };
+}
+
 /** Texto UTF-8 de los bytes canónicos de un documento (utilidad para firmantes y pruebas). */
 export function canonicalBytes(document: unknown): Uint8Array<ArrayBuffer> {
   return utf8(canonicalize(document));

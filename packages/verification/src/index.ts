@@ -1,6 +1,7 @@
 export { base64UrlToBytes, bytesToBase64Url } from './base64url.ts';
 export {
   canonicalBytes,
+  verifyCancelacion,
   verifyDocument,
   verifyManifest,
   type DocumentosPorTipo,
