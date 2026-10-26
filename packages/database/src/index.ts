@@ -7,6 +7,10 @@ export type {
   Session,
   Draft,
   AuditLog,
+  AlertaPublicada,
+  EventoAlerta,
+  EstadoAlerta,
+  ClavePublica,
 } from './generated/client';
 export {
   Role,
@@ -18,6 +22,7 @@ export {
   AuditOutcome,
 } from './generated/enums';
 export { ARGON2_OPTIONS, hashPassword, verifyPassword } from './password';
+export { applyAppRole, APP_ROLE, APP_ROLE_POLICY, type ApplyAppRoleOptions, type ApplyAppRoleResult } from './roles';
 export {
   addIssuer,
   AddIssuerError,
