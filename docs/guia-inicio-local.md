@@ -59,17 +59,23 @@ cp .env.example .env            # PowerShell: Copy-Item .env.example .env
 Abre `.env` y cambia **solo** esto:
 
 1. `POSTGRES_PASSWORD=` → una contraseña para la base local, por ejemplo `local-pg-2026`.
-2. `DATABASE_URL=` → pon **la misma** contraseña:
+2. `DATABASE_MIGRATION_URL=` → pon **la misma** contraseña (es la conexión del propietario, para migrar y sembrar):
    `postgresql://alertasegura:local-pg-2026@localhost:5432/alertasegura`
-3. `CSRF_SECRET=` → pega el resultado de:
+3. `APP_DB_PASSWORD=` → una contraseña **aparte, de 16 caracteres o más**, para el rol `alertasegura_app` con el que corre
+   la API. Pégala también en `DATABASE_URL=` (el usuario ya es `alertasegura_app`):
+   `postgresql://alertasegura_app:LA-MISMA-CONTRASEÑA@localhost:5432/alertasegura`
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(24).toString('base64url'))"
+   ```
+4. `CSRF_SECRET=` → pega el resultado de:
    ```bash
    node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
    ```
-4. `SEED_ADMIN_PASSWORD=`, `SEED_AUDITOR_PASSWORD=`, `SEED_ISSUER1_PASSWORD=`, `SEED_ISSUER2_PASSWORD=` → las contraseñas
+5. `SEED_ADMIN_PASSWORD=`, `SEED_AUDITOR_PASSWORD=`, `SEED_ISSUER1_PASSWORD=`, `SEED_ISSUER2_PASSWORD=` → las contraseñas
    con las que vas a entrar, **de 12 caracteres o más**. Anótalas.
 
 > **¿Tienes PostgreSQL instalado en Windows?** Ocupa el puerto 5432. Usa otro, por ejemplo 5433, en `POSTGRES_PORT=5433`
-> **y** en `DATABASE_URL` (`...@localhost:5433/...`). Para comprobar si está libre en PowerShell:
+> **y** en `DATABASE_MIGRATION_URL` y `DATABASE_URL` (`...@localhost:5433/...`). Para comprobar si está libre en PowerShell:
 > `Get-NetTCPConnection -LocalPort 5432 -State Listen` (si no muestra nada, está libre).
 
 El `.env` nunca se sube a Git (está en `.gitignore`).
@@ -110,9 +116,27 @@ debe aparecer `infra-postgres-1` con estado `(healthy)`.
 pnpm db:deploy
 ```
 
-Crea las tablas (`User`, `Session`, `Draft`, `AuditLog`) y los triggers que impiden modificar la auditoría.
+Crea las tablas (`User`, `Session`, `Draft`, `AuditLog` y, desde la semana 2, `AlertaPublicada`, `EventoAlerta`,
+`EstadoAlerta` y `ClavePublica`) y los triggers que impiden modificar la auditoría y las alertas firmadas.
+Usa el rol propietario (`DATABASE_MIGRATION_URL`).
 
-✅ Comprobación: muestra `2 migrations found` y `applied` la primera vez (o `No pending migrations to apply` si ya estaban).
+✅ Comprobación: muestra `migrations found` y `applied` la primera vez (o `No pending migrations to apply` si ya estaban).
+
+### 3 bis. Crea el rol de la API
+
+```bash
+pnpm db:roles
+```
+
+Crea (o actualiza) el rol `alertasegura_app` con la contraseña `APP_DB_PASSWORD`. Ese rol solo puede **leer e insertar** en
+las alertas publicadas, los eventos, los estados, las claves públicas y la auditoría: no puede modificarlas ni borrarlas
+(prueba P07). Es idempotente; **repítelo después de cada `pnpm db:deploy`** que añada tablas.
+
+✅ Comprobación: `[roles] alertasegura_app creado` (o `actualizado`) y una línea de permisos por tabla.
+
+> **Un solo rol para todo el servidor PostgreSQL.** `alertasegura_app` pertenece al servidor, no a una base: si trabajas con
+> varias bases (por ejemplo, un worktree por agente), usa la **misma** `APP_DB_PASSWORD` en todos los `.env`; si no, el
+> último `pnpm db:roles` cambia la contraseña de los demás.
 
 ### 4. Crea los usuarios (seed)
 
@@ -195,7 +219,8 @@ Repite pasos de la primera vez solo en estos casos:
 | Si… | Ejecuta |
 | --- | --- |
 | Hiciste `git pull` y cambiaron dependencias (`package.json` o `pnpm-lock.yaml`) | `pnpm install` y `pnpm build:packages` |
-| Llegaron migraciones nuevas (`packages/database/prisma/migrations`) | `pnpm db:deploy` |
+| Llegaron migraciones nuevas (`packages/database/prisma/migrations`) | `pnpm db:deploy` y `pnpm db:roles` |
+| Necesitas una cuenta de emisor nueva (ya no hay alta por HTTP) | `pnpm --filter @alertasegura/database lab issuer:add --email correo@ejemplo.bo --name "Nombre"` (la contraseña se pide sin mostrarla, o va en `LAB_ISSUER_PASSWORD`) |
 | Añadiste una contraseña `SEED_*` que antes faltaba | `pnpm db:seed` |
 
 ## Apagar (en orden inverso)

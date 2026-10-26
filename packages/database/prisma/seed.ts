@@ -118,9 +118,10 @@ async function seedUser(
 }
 
 async function seed(): Promise<void> {
-  const url = process.env.DATABASE_URL;
+  // El seed escribe como propietario; el rol de la app no debe sembrar datos.
+  const url = process.env.DATABASE_MIGRATION_URL || process.env.DATABASE_URL;
   if (!url) {
-    throw new Error('DATABASE_URL no esta definida (revise el .env de la raiz).');
+    throw new Error('DATABASE_MIGRATION_URL no esta definida (revise el .env de la raiz).');
   }
   const prisma = createPrismaClient({ connectionString: url, maxConnections: 2 });
   try {

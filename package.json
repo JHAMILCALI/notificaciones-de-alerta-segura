@@ -17,6 +17,7 @@
     "db:migrate": "pnpm --filter @alertasegura/database db:migrate",
     "db:deploy": "pnpm --filter @alertasegura/database db:deploy",
     "db:seed": "pnpm --filter @alertasegura/database db:seed",
+    "db:roles": "pnpm --filter @alertasegura/database db:roles",
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
