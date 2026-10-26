@@ -149,11 +149,15 @@ export class Evidence {
  * variable de entorno del proceso hijo, nunca por argumento. Devuelve el id que imprime el comando.
  */
 export function provisionIssuer({ email, name, password }) {
-  const r = spawnSync('pnpm', ['--silent', 'lab', 'issuer:add', '--email', email, '--name', name], {
+  const args = ['--silent', 'lab', 'issuer:add', '--email', email, '--name', name];
+  // En Windows pnpm es un .cmd y necesita shell, que concatena sin escapar: se entrecomilla cada argumento
+  // (los valores los genera la propia prueba y no contienen comillas).
+  const win = process.platform === 'win32';
+  const r = spawnSync(win ? `pnpm ${args.map((a) => `"${a}"`).join(' ')}` : 'pnpm', win ? [] : args, {
     cwd: root,
     env: { ...process.env, LAB_ISSUER_PASSWORD: password },
     encoding: 'utf8',
-    shell: process.platform === 'win32',
+    shell: win,
   });
   const out = `${r.stdout ?? ''}${r.stderr ?? ''}`;
   const id = /\(id ([0-9a-f-]{36})\)/.exec(out)?.[1] ?? null;

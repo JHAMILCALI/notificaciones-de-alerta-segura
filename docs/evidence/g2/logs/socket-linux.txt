@@ -1,0 +1,18 @@
+# Socket del firmante en Linux (contenedor infra-signer-1) — 2026-10-26T23:33:22Z
+## 1. Permisos del socket y del directorio
+drwxr-x--- 750 UNKNOWN(10001):UNKNOWN(10001) /run/signer
+srw-rw---- 660 UNKNOWN(10001):UNKNOWN(10001) /run/signer/signer.sock
+## 2. Proceso del firmante
+uid=10001 gid=10001 groups=10001
+## 3. Reinicio: el socket huérfano del volumen se reutiliza y el servicio vuelve a estar sano
+estado tras reinicio: healthy
+660 UNKNOWN:UNKNOWN /run/signer/signer.sock
+## 4. La API alcanza el socket (grupo 10001) y obtiene /health del firmante
+200 {"status":"ok","key_id":"llVcSpHkfKfuUn1u84xuiuas6VPUPn2dIrU9KTob75c"}
+## 5. Un usuario SIN el grupo 10001 no puede conectar al socket
+(contenedor nuevo sobre el mismo volumen; 'docker exec' no sirve aquí porque hereda el group_add 10001 del contenedor api)
+uid=10003 gid=10003 groups=10003
+rechazado: EACCES
+## 6. Control: el mismo contenedor CON el grupo 10001 sí conecta
+uid=10003 gid=10003 groups=10001,10003
+CONECTADO 200

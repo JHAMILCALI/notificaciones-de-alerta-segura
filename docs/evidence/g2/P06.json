@@ -1,0 +1,117 @@
+{
+  "id": "P06",
+  "title": "Cancelación válida / evento falsificado + historial",
+  "base": "http://localhost:3000/api/v1",
+  "startedAt": "2026-10-26T23:32:47.352Z",
+  "finishedAt": "2026-10-26T23:33:02.867Z",
+  "preparation": {
+    "manifestVersion": 1,
+    "keyIdActivo": "llVcSpHkfKfuUn1u84xuiuas6VPUPn2dIrU9KTob75c",
+    "rootKeyId": "spGtZx5pWxQCw3jlHWaV-2iRbhUzbcyjSk00aUQzDuk",
+    "alertaId": "ce32a599-97c4-494d-8900-1d4ab73675cd"
+  },
+  "steps": [
+    {
+      "step": "El dueño cancela su alerta",
+      "expected": "201",
+      "observed": "201",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "alerta": {
+            "id": "ce32a599-97c4-494d-8900-1d4ab73675cd",
+            "emisorId": "32330765-edf8-4d71-8aaa-562b851d47b7",
+            "publishedAt": "2026-10-26T23:32:46.809Z",
+            "resumen": {
+              "tipo": "GRANIZADA",
+              "zona": {
+                "departamento": "LA_PAZ",
+                "municipio": "El Alto"
+              },
+              "severidad": "NARANJA",
+              "mensaje": "Alerta G2 8e2025ab: simulacro de laboratorio, no es una alerta real.",
+              "emitida_en": "2026-10-26T23:32:46Z",
+              "expira_en": "2026-10-27T11:32:46Z"
+            },
+            "alerta": {
+              "payload_canonico": "eyJhbGVydGFfaWQiOiJjZTMyYTU5OS05N2M0LTQ5NGQtODkwMC0xZDRhYjczNjc1Y2QiLCJlbWlzb3JfaWQiOiIzMjMzMDc2NS1lZGY4LTRkNzEtOGFhYS01NjJiODUxZDQ3YjciLCJlbWl0aWRhX2VuIjoiMjAyNi0xMC0yNlQyMzozMjo0NloiLCJleHBpcmFfZW4iOiIyMDI2LTEwLTI3VDExOjMyOjQ2WiIsImtleV9pZCI6ImxsVmNTcEhrZktmdVVuMXU4NHh1aXVhczZWUFVQbjJkSXJVOUtUb2I3NWMiLCJtZW5zYWplIjoiQWxlcnRhIEcyIDhlMjAyNWFiOiBzaW11bGFjcm8gZGUgbGFib3JhdG9yaW8sIG5vIGVzIHVuYSBhbGVydGEgcmVhbC4iLCJzZXZlcmlkYWQiOiJOQVJBTkpBIiwidGlwbyI6IkdSQU5JWkFEQSIsInRpcG9fZG9jIjoiQUxFUlRBIiwidmVyc2lvbiI6MSwiem9uYSI6eyJkZXBhcnRhbWVudG8iOiJMQV9QQVoiLCJtdW5pY2lwaW8iOiJFbCBBbHRvIn19",
+              "hash_payload": "5a4539c20683dbc8e96667396acfbcad32d4ad2df00648b53280cc11bf05ed09",
+              "firma": "IMQWJBCJl5kyy6DaHMOsnlAlGZv2BCEEWoMsvvJtUTVL-wmlOqzRBGLUuD1pNr2hW56hVdYcaAT7KovRHHPw5w",
+              "key_id": "llVcSpHkfKfuUn1u84xuiuas6VPUPn2dIrU9KTob75c"
+            },
+            "eventos": [
+              {
+                "payload_canonico": "eyJhY2Npb24iOiJDQU5DRUxBQ0lPTiIsImFsZXJ0YV9pZCI6ImNlMzJhNTk5LTk3YzQtNDk0ZC04OTAwLTFkNGFiNzM2NzVjZCIsImVtaXNvcl9pZCI6IjMyMzMwNzY1LWVkZjgtNGQ3MS04YWFhLTU2MmI4NTFkNDdiNyIsImVtaXRpZGFfZW4iOiIyMDI2LTEwLTI2VDIzOjMyOjQ3WiIsImV2ZW50b19pZCI6IjVkYzRkYmUxLWY0MjEtNDhlNi1hMWMyLThjM2NhZTYzMGM1MCIsImhhc2hfYWxlcnRhIjoiNWE0NTM5YzIwNjgzZGJjOGU5NjY2NzM5NmFjZmJjYWQzMmQ0YWQyZGYwMDY0OGI1MzI4MGNjMTFiZjA1ZWQwOSIsImtleV9pZCI6ImxsVmNTcEhrZktmdVVuMXU4NHh1aXVhczZWUFVQbjJkSXJVOUtUb2I3NWMiLCJ0aXBvX2RvYyI6IkVWRU5UTyIsInZlcnNpb24iOjF9",
+                "hash_payload": "ac6f5a86fac53feaf32854651935086dbb72005004fc25dfac3f1c3581ef978a",
+                "firma": "stYiK79kntxhoTc2JLDpkkluMmgrcly6i9pBnxy0IGoFmQ0ibxp7MBeFAO369E1lZ05NeU_AKE19tC8Wj2KZYA",
+                "key_id": "llVcSpHkfKfuUn1u84xuiuas6VPUPn2dIrU9KTob75c"
+              }
+            ],
+            "estado": {
+              "payload_canonico": "eyJhbGVydGFfaWQiOiJjZTMyYTU5OS05N2M0LTQ5NGQtODkwMC0xZDRhYjczNjc1Y2QiLCJlc3RhZG8iOiJDQU5DRUxBREEiLCJleHBpcmVzX2F0IjoiMjAyNi0xMC0yNlQyMzo0Mjo0N1oiLCJpc3N1ZWRfYXQiOiIyMDI2LTEwLTI2VDIzOjMyOjQ3WiIsImtleV9pZCI6ImxsVmNTcEhrZktmdVVuMXU4NHh1aXVhczZWUFVQbjJkSXJVOUtUb2I3NWMiLCJzZWN1ZW5jaWEiOjEsInRpcG9fZG9jIjoiRVNUQURPIiwidWx0aW1vX2V2ZW50b19oYXNoIjoiYWM2ZjVhODZmYWM1M2ZlYWYzMjg1NDY1MTkzNTA4NmRiYjcyMDA1MDA0ZmMyNWRmYWMzZjFjMzU4MWVmOTc4YSIsInZlcnNpb24iOjF9",
+              "hash_payload": "eb69193b5b0d64c5c58316fd7946f88b915221271ba28c861dd3583038cddaee",
+              "firma": "hMY9nYp73QuRrwmk2_DR4XeZKLtHZtEbRxTagOWssCzwparN_q-80-QUOL4fiZrDX-6nu-Ekx6sj-8dEDkml3Q",
+              "key_id": "llVcSpHkfKfuUn1u84xuiuas6VPUPn2dIrU9KTob75c"
+            }
+          }
+        }
+      }
+    },
+    {
+      "step": "El EVENTO verifica y su hash_alerta es el SHA-256 de los bytes de la alerta",
+      "expected": "válido",
+      "observed": "válido (hash_alerta=5a4539c20683…)",
+      "result": "OK"
+    },
+    {
+      "step": "ESTADO firmado: CANCELADA, secuencia 1, encadena el hash del evento, frescura ≤ 600 s",
+      "expected": "CANCELADA/1/hash/≤600",
+      "observed": "CANCELADA/1/hash/600",
+      "result": "OK"
+    },
+    {
+      "step": "Cancelar dos veces",
+      "expected": "409 CONFLICT",
+      "observed": "409 CONFLICT",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 409,
+          "code": "CONFLICT",
+          "message": "La alerta ya fue cancelada"
+        }
+      }
+    },
+    {
+      "step": "Historial visible en la consulta pública",
+      "expected": "1 evento",
+      "observed": "1 evento(s)",
+      "result": "OK"
+    },
+    {
+      "step": "Evento legítimo de OTRA alerta presentado para esta",
+      "expected": "CANCELACION_ALERTA_MISMATCH",
+      "observed": "CANCELACION_ALERTA_MISMATCH",
+      "result": "OK"
+    },
+    {
+      "step": "Evento con hash_alerta alterado",
+      "expected": "SIGNATURE_INVALID",
+      "observed": "SIGNATURE_INVALID",
+      "result": "OK"
+    },
+    {
+      "step": "Evento bien formado firmado con una clave ajena al manifiesto",
+      "expected": "KEY_ID_MISMATCH",
+      "observed": "KEY_ID_MISMATCH",
+      "result": "OK"
+    },
+    {
+      "step": "El mismo evento ajeno haciéndose pasar por la clave activa",
+      "expected": "rechazo",
+      "observed": "SIGNATURE_INVALID",
+      "result": "OK"
+    }
+  ],
+  "status": "APROBADO"
+}

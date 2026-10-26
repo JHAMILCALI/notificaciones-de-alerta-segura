@@ -1,0 +1,81 @@
+{
+  "id": "P02c",
+  "title": "Emisor A cancela alerta de emisor B → 403 por propiedad",
+  "base": "http://localhost:3000/api/v1",
+  "startedAt": "2026-10-26T23:32:46.600Z",
+  "finishedAt": "2026-10-26T23:33:02.865Z",
+  "preparation": {
+    "manifestVersion": 1,
+    "keyIdActivo": "llVcSpHkfKfuUn1u84xuiuas6VPUPn2dIrU9KTob75c",
+    "rootKeyId": "spGtZx5pWxQCw3jlHWaV-2iRbhUzbcyjSk00aUQzDuk",
+    "actors": [
+      "emisor A (dueño)",
+      "emisor B (ajeno)",
+      "ADMIN",
+      "anónimo"
+    ]
+  },
+  "steps": [
+    {
+      "step": "Preparación: emisor A publica una alerta",
+      "expected": "201",
+      "observed": "201",
+      "result": "OK",
+      "detail": {
+        "alertaId": "ce32a599-97c4-494d-8900-1d4ab73675cd"
+      }
+    },
+    {
+      "step": "Emisor B cancela la alerta de A",
+      "expected": "403 FORBIDDEN",
+      "observed": "403 FORBIDDEN",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 403,
+          "code": "FORBIDDEN",
+          "message": "No tiene permiso para realizar esta acción"
+        }
+      }
+    },
+    {
+      "step": "ADMIN cancela (no tiene alerts:cancel)",
+      "expected": "403 FORBIDDEN",
+      "observed": "403 FORBIDDEN",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 403,
+          "code": "FORBIDDEN",
+          "message": "No tiene permiso para realizar esta acción"
+        }
+      }
+    },
+    {
+      "step": "Anónimo cancela",
+      "expected": "401 UNAUTHENTICATED",
+      "observed": "401 UNAUTHENTICATED",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 401,
+          "code": "UNAUTHENTICATED",
+          "message": "Autenticación requerida"
+        }
+      }
+    },
+    {
+      "step": "Auditoría registra CANCEL_DENIED del emisor B",
+      "expected": "presente",
+      "observed": "presente (1)",
+      "result": "OK"
+    },
+    {
+      "step": "La alerta sigue VIGENTE y sin eventos (estado firmado verificado)",
+      "expected": "VIGENTE, 0 eventos",
+      "observed": "VIGENTE, 0 eventos",
+      "result": "OK"
+    }
+  ],
+  "status": "APROBADO"
+}

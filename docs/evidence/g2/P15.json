@@ -1,0 +1,50 @@
+{
+  "id": "P15",
+  "title": "Usuario del proceso API intenta leer la clave de firma → permiso denegado",
+  "base": "http://localhost:3000/api/v1",
+  "startedAt": "2026-10-26T23:32:51.959Z",
+  "finishedAt": "2026-10-26T23:33:02.871Z",
+  "preparation": {
+    "script": "infra/scripts/p15-api-isolation.sh (SHIRO), ejecutado por ATLAS contra el contenedor en marcha",
+    "container": "infra-api-1"
+  },
+  "steps": [
+    {
+      "step": "A1. el contenedor api corre como el usuario 10002 (grupos: 10002 10001)",
+      "expected": "PASS",
+      "observed": "PASS",
+      "result": "OK"
+    },
+    {
+      "step": "A2. el contenedor api no monta ninguna ruta de secretos (montajes: /run/signer /run/trust/manifest.json )",
+      "expected": "PASS",
+      "observed": "PASS",
+      "result": "OK"
+    },
+    {
+      "step": "A3. node -e \"fs.readFileSync('/run/secrets/signer-private-key.pem')\" desde api → ENOENT (la clave no está montada)",
+      "expected": "PASS",
+      "observed": "PASS",
+      "result": "OK"
+    },
+    {
+      "step": "B.  con la clave montada (10001:10001, 0400), api (10002 + grupo 10001) → EACCES",
+      "expected": "PASS",
+      "observed": "PASS",
+      "result": "OK"
+    },
+    {
+      "step": "C.  control: el usuario 10001 (firmante) sí la lee → LEIDA",
+      "expected": "PASS",
+      "observed": "PASS",
+      "result": "OK"
+    },
+    {
+      "step": "El script termina sin fallos",
+      "expected": "exit 0",
+      "observed": "exit 0",
+      "result": "OK"
+    }
+  ],
+  "status": "APROBADO"
+}

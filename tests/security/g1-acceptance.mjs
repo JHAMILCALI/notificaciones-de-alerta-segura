@@ -7,7 +7,7 @@
  *
  * Requisitos: PostgreSQL arriba, migraciones, roles y seed aplicados, API escuchando y firmante disponible.
  * Credenciales: las del seed, leídas de `.env` (nunca se escriben en la evidencia).
- * Uso: node tests/security/g1-acceptance.mjs [--base http://localhost:3000/api/v1]
+ * Uso: node tests/security/g1-acceptance.mjs [--base http://localhost:3000/api/v1] [--out docs/evidence/g2/regresion-g1]
  */
 import { randomBytes } from 'node:crypto';
 import { mkdirSync, writeFileSync } from 'node:fs';
@@ -33,7 +33,9 @@ const LOGIN_ACCOUNT_LIMIT = Number(env.RATE_LOGIN_ACCOUNT_LIMIT ?? 5);
 const LOGIN_IP_LIMIT = Number(env.RATE_LOGIN_IP_LIMIT ?? 10);
 const LOGIN_IP_TTL_S = Number(env.RATE_LOGIN_IP_WINDOW_SECONDS ?? 60);
 const USER_LIMIT = Number(env.RATE_USER_LIMIT ?? 120);
-const evidenceDir = join(root, 'docs', 'evidence', 'g1');
+// `--out` permite guardar una regresión sin pisar la evidencia de cierre de la semana 1.
+const argOut = process.argv.indexOf('--out');
+const evidenceDir = argOut > 0 ? join(root, process.argv[argOut + 1]) : join(root, 'docs', 'evidence', 'g1');
 
 const client = (name) => new Client(name, BASE);
 const evidence = (id, title, prep) => new Evidence(id, title, prep, BASE);

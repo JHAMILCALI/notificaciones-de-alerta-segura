@@ -1,0 +1,166 @@
+$ pnpm -r --if-present build
+packages/database build$ prisma generate && tsc -p tsconfig.json
+packages/shared build$ node -e "require('fs').rmSync('dist',{recursive:true,force:true})" && tsc -p tsconfig.json && tsc -p tsconfig.cjs.json && node scripts/mark-cjs.cjs
+packages/database build: Loaded Prisma config from prisma.config.ts.
+packages/database build: 
+packages/database build: Prisma schema loaded from prisma\schema.prisma.
+packages/database build: 
+packages/database build: ✔ Generated Prisma Client (7.10.1) to .\src\generated in 203ms
+packages/database build: 
+packages/shared build: Done
+packages/verification build$ node -e "require('fs').rmSync('dist',{recursive:true,force:true})" && tsc -p tsconfig.build.json
+packages/verification build: Done
+tools/trust-cli build$ node -e "require('fs').rmSync('dist',{recursive:true,force:true})" && tsc -p tsconfig.build.json
+apps/signer build$ tsc -p tsconfig.json && esbuild src/main.ts --bundle --platform=node --format=esm --target=node24 --outfile=dist/main.js
+apps/web build$ tsc -b && vite build
+packages/database build: Done
+apps/api prebuild$ pnpm --filter @alertasegura/database build
+apps/api prebuild: $ prisma generate && tsc -p tsconfig.json
+tools/trust-cli build: Done
+apps/api prebuild: Loaded Prisma config from prisma.config.ts.
+apps/api prebuild: 
+apps/api prebuild: Prisma schema loaded from prisma\schema.prisma.
+apps/api prebuild: 
+apps/api prebuild: ✔ Generated Prisma Client (7.10.1) to .\src\generated in 174ms
+apps/api prebuild: 
+apps/signer build: 
+apps/signer build:   dist\main.js  769.7kb
+apps/signer build: 
+apps/signer build: Done in 1718ms
+apps/signer build: Done
+apps/web build: vite v8.3.4 building client environment for production...
+apps/web build: transforming...
+apps/web build: ✓ 157 modules transformed.
+apps/web build: rendering chunks...
+apps/api prebuild: Done
+apps/api build$ nest build
+apps/web build: computing gzip size...
+apps/web build: dist/index.html                   0.56 kB │ gzip:   0.33 kB
+apps/web build: dist/assets/index-BKpn38Of.css    5.91 kB │ gzip:   2.00 kB
+apps/web build: dist/assets/index-CHq7XGbk.js   397.27 kB │ gzip: 122.95 kB
+apps/web build: 
+apps/web build: ✓ built in 1.42s
+apps/web build: Done
+apps/api build: Done
+$ pnpm -r --if-present typecheck
+packages/shared typecheck$ tsc -p tsconfig.json --noEmit
+packages/database typecheck$ prisma generate && tsc -p tsconfig.json --noEmit
+packages/shared typecheck: Done
+packages/verification typecheck$ tsc -p tsconfig.json
+packages/database typecheck: Loaded Prisma config from prisma.config.ts.
+packages/database typecheck: 
+packages/database typecheck: Prisma schema loaded from prisma\schema.prisma.
+packages/database typecheck: 
+packages/database typecheck: ✔ Generated Prisma Client (7.10.1) to .\src\generated in 181ms
+packages/database typecheck: 
+packages/verification typecheck: Done
+tools/trust-cli typecheck$ tsc -p tsconfig.json
+apps/signer typecheck$ tsc -p tsconfig.json
+apps/web typecheck$ tsc -b
+packages/database typecheck: Done
+apps/api pretypecheck$ pnpm --filter @alertasegura/database build
+apps/api pretypecheck: $ prisma generate && tsc -p tsconfig.json
+tools/trust-cli typecheck: Done
+apps/signer typecheck: Done
+apps/api pretypecheck: Loaded Prisma config from prisma.config.ts.
+apps/api pretypecheck: 
+apps/api pretypecheck: Prisma schema loaded from prisma\schema.prisma.
+apps/api pretypecheck: 
+apps/api pretypecheck: ✔ Generated Prisma Client (7.10.1) to .\src\generated in 189ms
+apps/api pretypecheck: 
+apps/web typecheck: Done
+apps/api pretypecheck: Done
+apps/api typecheck$ tsc --noEmit -p tsconfig.json
+apps/api typecheck: Done
+$ pnpm -r --if-present lint
+apps/api lint$ eslint "{src,test}/**/*.ts"
+apps/web lint$ oxlint
+apps/web lint: Done
+apps/api lint: Done
+$ pnpm -r --if-present test
+Scope: 7 of 8 workspace projects
+apps/api pretest$ pnpm --filter @alertasegura/database build
+packages/verification test$ vitest run
+apps/api pretest: $ prisma generate && tsc -p tsconfig.json
+packages/verification test: 
+packages/verification test:  RUN  v5.0.5 C:/2026-2/Tecnico superior/alertasegura/packages/verification
+packages/verification test: 
+apps/api pretest: Loaded Prisma config from prisma.config.ts.
+apps/api pretest: 
+packages/verification test: 
+packages/verification test:  Test Files  5 passed (5)
+packages/verification test:       Tests  162 passed (162)
+packages/verification test:    Start at  18:51:30
+packages/verification test:    Duration  1.41s (import 48%, transform 37%, tests 13%, worker 2%)
+packages/verification test: 
+apps/api pretest: Prisma schema loaded from prisma\schema.prisma.
+packages/verification test: Done
+apps/signer test$ vitest run
+apps/web test$ vitest run
+tools/trust-cli test$ vitest run
+apps/api pretest: 
+apps/api pretest: ✔ Generated Prisma Client (7.10.1) to .\src\generated in 222ms
+apps/api pretest: 
+apps/signer test: 
+apps/signer test:  RUN  v5.0.5 C:/2026-2/Tecnico superior/alertasegura/apps/signer
+apps/signer test: 
+tools/trust-cli test: 
+tools/trust-cli test:  RUN  v5.0.5 C:/2026-2/Tecnico superior/alertasegura/tools/trust-cli
+tools/trust-cli test: 
+apps/web test: 
+apps/web test:  RUN  v5.0.5 C:/2026-2/Tecnico superior/alertasegura/apps/web
+apps/web test: 
+apps/signer test: 
+apps/signer test:  Test Files  1 passed (1)
+apps/signer test:       Tests  20 passed | 2 skipped (22)
+apps/signer test:    Start at  18:51:33
+apps/signer test:    Duration  2.62s (transform 39%, tests 37%, import 24%, worker 1%)
+apps/signer test: 
+apps/signer test: Done
+tools/trust-cli test: 
+tools/trust-cli test:  Test Files  1 passed (1)
+tools/trust-cli test:       Tests  23 passed (23)
+tools/trust-cli test:    Start at  18:51:33
+tools/trust-cli test:    Duration  5.14s (tests 67%, transform 22%, import 11%)
+tools/trust-cli test: 
+tools/trust-cli test: Done
+apps/api pretest: Done
+apps/api test$ jest
+apps/api test: 
+apps/api test: Test Suites: 7 passed, 7 total
+apps/api test: Tests:       63 passed, 63 total
+apps/api test: Snapshots:   0 total
+apps/api test: Time:        8.52 s, estimated 30 s
+apps/api test: Ran all test suites.
+apps/api test: Done
+apps/web test: 
+apps/web test:  Test Files  8 passed (8)
+apps/web test:       Tests  74 passed (74)
+apps/web test:    Start at  18:51:33
+apps/web test:    Duration  19.22s (environment 57%, setup 23%, import 7%, transform 7%, tests 6%)
+apps/web test: 
+apps/web test: Done
+$ pnpm --filter @alertasegura/api test:e2e
+$ pnpm --filter @alertasegura/database build
+$ prisma generate && tsc -p tsconfig.json
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+✔ Generated Prisma Client (7.10.1) to .\src\generated in 140ms
+
+$ jest --config ./test/jest-e2e.json --runInBand
+[33m[Nest] 41988  - [39m26/10/2026, 18:52:29 [33m   WARN[39m [38;5;3m[HttpSignerClient] [39m[33mFirmante no disponible: conexión fallida (ENOENT)[39m
+[33m[Nest] 41988  - [39m26/10/2026, 18:52:30 [33m   WARN[39m [38;5;3m[HttpSignerClient] [39m[33mFirmante no disponible: sin respuesta en 300 ms[39m
+[33m[Nest] 41988  - [39m26/10/2026, 18:52:30 [33m   WARN[39m [38;5;3m[HttpSignerClient] [39m[33mFirmante no disponible: estado HTTP 500[39m
+[33m[Nest] 41988  - [39m26/10/2026, 18:52:30 [33m   WARN[39m [38;5;3m[HttpSignerClient] [39m[33mFirmante no disponible: estado HTTP 400[39m
+[33m[Nest] 41988  - [39m26/10/2026, 18:52:30 [33m   WARN[39m [38;5;3m[HttpSignerClient] [39m[33mFirmante no disponible: respuesta que no es JSON[39m
+[33m[Nest] 41988  - [39m26/10/2026, 18:52:30 [33m   WARN[39m [38;5;3m[HttpSignerClient] [39m[33mFirmante no disponible: respuesta fuera de contrato[39m
+[33m[Nest] 41988  - [39m26/10/2026, 18:52:30 [33m   WARN[39m [38;5;3m[HttpSignerClient] [39m[33mFirmante no disponible: respuesta demasiado grande[39m
+[33m[Nest] 41988  - [39m26/10/2026, 18:52:30 [33m   WARN[39m [38;5;3m[HttpSignerClient] [39m[33mFirmante no disponible: estado HTTP 500[39m
+
+Test Suites: 13 passed, 13 total
+Tests:       169 passed, 169 total
+Snapshots:   0 total
+Time:        38.632 s
+Ran all test suites.
