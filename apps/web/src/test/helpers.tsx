@@ -13,7 +13,7 @@ export const adminUser = {
   email: 'admin@alertasegura.test',
   displayName: 'Admin Prueba',
   role: 'ADMIN' as const,
-  permissions: ['users:read', 'issuers:provision', 'audit:read'] as const,
+  permissions: ['users:read', 'audit:read'] as const,
 }
 
 export function jsonResponse(body: unknown, init: ResponseInit = {}): Response {
