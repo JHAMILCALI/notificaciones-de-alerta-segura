@@ -9,7 +9,8 @@ export const API_ERROR_CODES = [
   'NOT_FOUND',
   'CONFLICT',
   'RATE_LIMITED',
-  'PUBLICATION_NOT_IMPLEMENTED',
+  /** 503: el firmante no responde o no tiene clave; no se publica nada. */
+  'SIGNER_UNAVAILABLE',
   'INTERNAL_ERROR',
 ] as const;
 export const ApiErrorCodeSchema = z.enum(API_ERROR_CODES);

@@ -15,6 +15,10 @@ coverage/
 *.pem
 *.key
 infra/secrets/
+# Claves y manifiestos del laboratorio (semana 2): la clave del firmante y el manifiesto emitido localmente.
+# La clave raíz se guarda FUERA del repositorio (~/.alertasegura-lab por defecto).
+secrets/
+*.private.jwk
 
 # Logs and editor files
 *.log

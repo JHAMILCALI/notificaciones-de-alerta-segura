@@ -11,7 +11,14 @@ export const AUDIT_ACTIONS = [
   'RATE_LIMITED',
   'DRAFT_CREATED',
   'PUBLICATION_DENIED',
+  /** Solo semana 1 (publicación 501); se conserva para leer registros antiguos. */
   'PUBLICATION_AUTHORIZED',
+  'DRAFT_UPDATED',
+  'ALERT_PUBLISHED',
+  'PUBLICATION_FAILED',
+  'ALERT_CANCELLED',
+  'CANCEL_DENIED',
+  'CANCEL_FAILED',
 ] as const;
 export const AuditActionSchema = z.enum(AUDIT_ACTIONS);
 export type AuditAction = z.infer<typeof AuditActionSchema>;
