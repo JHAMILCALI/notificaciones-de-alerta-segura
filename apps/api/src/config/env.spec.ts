@@ -25,6 +25,33 @@ describe('loadConfig (validación con Zod, falla rápido)', () => {
     expect(config.rateLimits.global).toEqual({ limit: 300, windowSeconds: 60 });
   });
 
+  it('configura el firmante y el manifiesto de confianza', () => {
+    const defaults = loadConfig({ ...valid });
+    expect(defaults.signer).toEqual({
+      socketPath: '/run/signer/signer.sock',
+      timeoutMs: 3000,
+    });
+    expect(defaults.trustManifestFile).toBeNull();
+    const pipe = String.raw`\\.\pipe\alertasegura-signer`; // named pipe de Windows
+    const custom = loadConfig({
+      ...valid,
+      SIGNER_SOCKET_PATH: pipe,
+      SIGNER_TIMEOUT_MS: '1500',
+      TRUST_MANIFEST_FILE: '  ./secrets/manifest.json ',
+    });
+    expect(custom.signer).toEqual({
+      socketPath: pipe,
+      timeoutMs: 1500,
+    });
+    expect(custom.trustManifestFile).toBe('./secrets/manifest.json');
+    expect(() => loadConfig({ ...valid, SIGNER_TIMEOUT_MS: '0' })).toThrow(
+      ConfigError,
+    );
+    expect(
+      loadConfig({ ...valid, TRUST_MANIFEST_FILE: '' }).trustManifestFile,
+    ).toBeNull();
+  });
+
   it('exige CSRF_SECRET de al menos 32 bytes', () => {
     expect(() => loadConfig({ ...valid, CSRF_SECRET: 'x'.repeat(31) })).toThrow(
       ConfigError,

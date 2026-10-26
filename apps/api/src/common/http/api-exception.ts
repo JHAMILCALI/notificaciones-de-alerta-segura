@@ -60,3 +60,11 @@ export const validationFailed = (
     'La solicitud no es válida',
     issues,
   );
+
+/** 503: el firmante no responde o devolvió algo inconsistente; no se escribió nada. */
+export const signerUnavailable = (): ApiException =>
+  new ApiException(
+    503,
+    'SIGNER_UNAVAILABLE',
+    'El servicio de firma no está disponible; inténtelo de nuevo más tarde',
+  );

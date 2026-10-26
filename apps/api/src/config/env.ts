@@ -68,6 +68,20 @@ const EnvSchema = z.object({
   RATE_USER_WINDOW_SECONDS: positiveInt.default(60),
   RATE_GLOBAL_LIMIT: positiveInt.default(300),
   RATE_GLOBAL_WINDOW_SECONDS: positiveInt.default(60),
+
+  /** Socket Unix del firmante (en Windows, una named pipe \.pipealertasegura-signer). */
+  SIGNER_SOCKET_PATH: z
+    .string()
+    .trim()
+    .min(1)
+    .default('/run/signer/signer.sock'),
+  SIGNER_TIMEOUT_MS: positiveInt.default(3000),
+  /** Manifiesto de confianza firmado por la raíz (lo emite la CLI offline). Sin él, /trust/manifest da 503. */
+  TRUST_MANIFEST_FILE: z
+    .string()
+    .trim()
+    .optional()
+    .transform((value) => (value ? value : null)),
 });
 
 export interface RateLimitRule {
@@ -91,6 +105,9 @@ export interface AppConfig {
     user: RateLimitRule;
     global: RateLimitRule;
   };
+  signer: { socketPath: string; timeoutMs: number };
+  /** Ruta del manifiesto firmado; null si no está configurado. */
+  trustManifestFile: string | null;
 }
 
 export class ConfigError extends Error {
@@ -142,6 +159,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
         windowSeconds: e.RATE_GLOBAL_WINDOW_SECONDS,
       },
     },
+    signer: {
+      socketPath: e.SIGNER_SOCKET_PATH,
+      timeoutMs: e.SIGNER_TIMEOUT_MS,
+    },
+    trustManifestFile: e.TRUST_MANIFEST_FILE,
   };
 }
 

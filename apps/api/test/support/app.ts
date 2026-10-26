@@ -15,6 +15,9 @@ import {
   type LoginResponse,
 } from '@alertasegura/shared';
 import { AppModule } from '../../src/app.module';
+import { CLOCK, type Clock } from '../../src/common/clock/clock';
+import { SIGNER_CLIENT } from '../../src/modules/signer/signer.client';
+import { FakeSigner } from './fake-signer';
 import { configureApp } from '../../src/app.setup';
 import { APP_CONFIG } from '../../src/config/config.module';
 import type { AppConfig } from '../../src/config/env';
@@ -28,6 +31,29 @@ export interface ConfigOverrides {
   trustProxy?: false | number;
   session?: Partial<AppConfig['session']>;
   rateLimits?: Partial<AppConfig['rateLimits']>;
+  /** Ruta del manifiesto de confianza firmado (por defecto, no configurado → 503). */
+  trustManifestFile?: string | null;
+  /** Firmante de la API; por defecto, un firmante falso de prueba con clave efímera. */
+  signer?: FakeSigner;
+  /** Reloj de la API; por defecto, un reloj controlable que parte de la hora real. */
+  clock?: TestClock;
+}
+
+/** Reloj controlable: las pruebas lo adelantan para vencer alertas y estados sin esperar. */
+export class TestClock implements Clock {
+  private current: number;
+  constructor(start: Date = new Date()) {
+    this.current = start.getTime();
+  }
+  now(): Date {
+    return new Date(this.current);
+  }
+  advance(ms: number): void {
+    this.current += ms;
+  }
+  set(date: Date): void {
+    this.current = date.getTime();
+  }
 }
 
 export function testConfig(overrides: ConfigOverrides = {}): AppConfig {
@@ -59,6 +85,8 @@ export function testConfig(overrides: ConfigOverrides = {}): AppConfig {
       global: generous,
       ...overrides.rateLimits,
     },
+    signer: { socketPath: '/nonexistent/signer.sock', timeoutMs: 3000 },
+    trustManifestFile: overrides.trustManifestFile ?? null,
   };
 }
 
@@ -69,6 +97,10 @@ export interface TestApp {
   /** Cliente con el rol propietario de la base de prueba (preparar datos y comprobar triggers). */
   owner: PrismaClient;
   config: AppConfig;
+  /** Firmante falso conectado a la API de la prueba. */
+  signer: FakeSigner;
+  /** Reloj que usa la API para fechar documentos. */
+  clock: TestClock;
   /** Cliente HTTP con jar de cookies propio (un navegador). */
   browser: () => TestAgent;
   close: () => Promise<void>;
@@ -79,9 +111,15 @@ export async function createTestApp(
   overrides: ConfigOverrides = {},
 ): Promise<TestApp> {
   const config = testConfig(overrides);
+  const signer = overrides.signer ?? new FakeSigner();
+  const clock = overrides.clock ?? new TestClock();
   const moduleRef = await Test.createTestingModule({ imports: [AppModule] })
     .overrideProvider(APP_CONFIG)
     .useValue(config)
+    .overrideProvider(SIGNER_CLIENT)
+    .useValue(signer)
+    .overrideProvider(CLOCK)
+    .useValue(clock)
     .compile();
   const app = moduleRef.createNestApplication<NestExpressApplication>({
     logger: ['error'],
@@ -102,6 +140,8 @@ export async function createTestApp(
     prisma,
     owner,
     config,
+    signer,
+    clock,
     browser: () => request.agent(app.getHttpServer()),
     close: async () => {
       await owner.$disconnect();
