@@ -1,0 +1,143 @@
+{
+  "$comment": "Generado por packages/verification/scripts/generate-p16-vectors.ts con claves ECDSA P-256 efimeras ya descartadas (firmante y atacante). Solo contiene claves publicas, sobres firmados y el resultado esperado de verifyCancelacion.",
+  "publicKeyJwk": {
+    "kty": "EC",
+    "crv": "P-256",
+    "x": "j8kw0zMStHuzWts2nFAMbx1r_1d_Te8BhzYc7V3Qu58",
+    "y": "TORM5LGxxMxCeOYVT2mbu3acd8MDF19i6lHWBBBEmRc"
+  },
+  "keyId": "cKfxYW0Mjvs61lL8BV5pPRE4C-Ha_iRQQ6SrcOfjN7g",
+  "alerta": {
+    "payload_canonico": "eyJhbGVydGFfaWQiOiIzZjFjOWE1Mi04ZDNlLTRjMWItOWY2YS0yYjdkNWUxYTBjMTEiLCJlbWlzb3JfaWQiOiI5YjJlN2YxMC00YTZkLTRkNTgtOGMzMy01ZTBmMWE3YjJkNDQiLCJlbWl0aWRhX2VuIjoiMjAyNi0xMC0yNlQxNDowNTowOVoiLCJleHBpcmFfZW4iOiIyMDI2LTEwLTI2VDIwOjA1OjA5WiIsImtleV9pZCI6ImNLZnhZVzBNanZzNjFsTDhCVjVwUFJFNEMtSGFfaVJRUTZTcmNPZmpON2ciLCJtZW5zYWplIjoiRGVzYm9yZGUgZGVsIHLDrW8gUGlyYcOtIGVuIGxhIHpvbmEgbm9ydGU6IGV2YWN1YXIgaGFjaWEgdGVycmVubyBhbHRvLiIsInNldmVyaWRhZCI6Ik5BUkFOSkEiLCJ0aXBvIjoiSU5VTkRBQ0lPTiIsInRpcG9fZG9jIjoiQUxFUlRBIiwidmVyc2lvbiI6MSwiem9uYSI6eyJkZXBhcnRhbWVudG8iOiJTQU5UQV9DUlVaIiwibXVuaWNpcGlvIjoiV2FybmVzIn19",
+    "hash_payload": "4aa311f846dd22131f3a7600744efdec630ac08263c94de902e93dd50bfd64b2",
+    "firma": "TuvKqBQ-tvfnt4p1becLGbR8lZMJetmPwO-dpR9Grd05dZb3iNjJXmqj00an0Sv4pXKWCz5H64bhixZaYjspuw",
+    "key_id": "cKfxYW0Mjvs61lL8BV5pPRE4C-Ha_iRQQ6SrcOfjN7g"
+  },
+  "vectors": [
+    {
+      "id": "ok-cancelacion",
+      "description": "Control: cancelación legítima de la alerta",
+      "evento": {
+        "payload_canonico": "eyJhY2Npb24iOiJDQU5DRUxBQ0lPTiIsImFsZXJ0YV9pZCI6IjNmMWM5YTUyLThkM2UtNGMxYi05ZjZhLTJiN2Q1ZTFhMGMxMSIsImVtaXNvcl9pZCI6IjliMmU3ZjEwLTRhNmQtNGQ1OC04YzMzLTVlMGYxYTdiMmQ0NCIsImVtaXRpZGFfZW4iOiIyMDI2LTEwLTI2VDE1OjAwOjAwWiIsImV2ZW50b19pZCI6ImM0ZDhhMWU2LTdiNTItNGYwOS1hMWQzLTZlOGI5YzBmMmE3NyIsImhhc2hfYWxlcnRhIjoiNGFhMzExZjg0NmRkMjIxMzFmM2E3NjAwNzQ0ZWZkZWM2MzBhYzA4MjYzYzk0ZGU5MDJlOTNkZDUwYmZkNjRiMiIsImtleV9pZCI6ImNLZnhZVzBNanZzNjFsTDhCVjVwUFJFNEMtSGFfaVJRUTZTcmNPZmpON2ciLCJ0aXBvX2RvYyI6IkVWRU5UTyIsInZlcnNpb24iOjF9",
+        "hash_payload": "8fcc0046abe7c915e5c09a6a7e00c6897f64c5f50e1dd056486f2c3413931352",
+        "firma": "3kKMi4n4Wz-vyHB7xVyEM6lpUIzKw8Mbn8CFI_lgqqPi6DG7K0y0vsP8KOe1TmhkVSJAXdTyPU9V6Iv4cCKvDw",
+        "key_id": "cKfxYW0Mjvs61lL8BV5pPRE4C-Ha_iRQQ6SrcOfjN7g"
+      },
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "id": "evento-otra-clave",
+      "description": "EVENTO bien formado firmado con una clave del atacante",
+      "evento": {
+        "payload_canonico": "eyJhY2Npb24iOiJDQU5DRUxBQ0lPTiIsImFsZXJ0YV9pZCI6IjNmMWM5YTUyLThkM2UtNGMxYi05ZjZhLTJiN2Q1ZTFhMGMxMSIsImVtaXNvcl9pZCI6IjliMmU3ZjEwLTRhNmQtNGQ1OC04YzMzLTVlMGYxYTdiMmQ0NCIsImVtaXRpZGFfZW4iOiIyMDI2LTEwLTI2VDE1OjAwOjAwWiIsImV2ZW50b19pZCI6ImM0ZDhhMWU2LTdiNTItNGYwOS1hMWQzLTZlOGI5YzBmMmE3NyIsImhhc2hfYWxlcnRhIjoiNGFhMzExZjg0NmRkMjIxMzFmM2E3NjAwNzQ0ZWZkZWM2MzBhYzA4MjYzYzk0ZGU5MDJlOTNkZDUwYmZkNjRiMiIsImtleV9pZCI6IlNxWTgxQUQyaU1FMkpXYS1Xb1F0a3JQLWY2dnJ6eWMxZG4tbzNNdjJ6bFkiLCJ0aXBvX2RvYyI6IkVWRU5UTyIsInZlcnNpb24iOjF9",
+        "hash_payload": "f71608d904aac168697da870f0d6da8c7e3488cf347288e84912cdc8e2827b6a",
+        "firma": "_gQPdWGQMQro3YjrKFwwfIk_wkL_YekNM6kDgA4_ZE2Cotnmr-ANpBqhgYrNf56oelAVwKqvNYitXArj6RJJ_A",
+        "key_id": "SqY81AD2iME2JWa-WoQtkrP-f6vrzyc1dn-o3Mv2zlY"
+      },
+      "expected": {
+        "valid": false,
+        "code": "KEY_ID_MISMATCH"
+      }
+    },
+    {
+      "id": "evento-otra-clave-con-key-id-legitimo",
+      "description": "EVENTO firmado por el atacante pero declarando el key_id del firmante legítimo",
+      "evento": {
+        "payload_canonico": "eyJhY2Npb24iOiJDQU5DRUxBQ0lPTiIsImFsZXJ0YV9pZCI6IjNmMWM5YTUyLThkM2UtNGMxYi05ZjZhLTJiN2Q1ZTFhMGMxMSIsImVtaXNvcl9pZCI6IjliMmU3ZjEwLTRhNmQtNGQ1OC04YzMzLTVlMGYxYTdiMmQ0NCIsImVtaXRpZGFfZW4iOiIyMDI2LTEwLTI2VDE1OjAwOjAwWiIsImV2ZW50b19pZCI6ImM0ZDhhMWU2LTdiNTItNGYwOS1hMWQzLTZlOGI5YzBmMmE3NyIsImhhc2hfYWxlcnRhIjoiNGFhMzExZjg0NmRkMjIxMzFmM2E3NjAwNzQ0ZWZkZWM2MzBhYzA4MjYzYzk0ZGU5MDJlOTNkZDUwYmZkNjRiMiIsImtleV9pZCI6ImNLZnhZVzBNanZzNjFsTDhCVjVwUFJFNEMtSGFfaVJRUTZTcmNPZmpON2ciLCJ0aXBvX2RvYyI6IkVWRU5UTyIsInZlcnNpb24iOjF9",
+        "hash_payload": "8fcc0046abe7c915e5c09a6a7e00c6897f64c5f50e1dd056486f2c3413931352",
+        "firma": "WYAlYkBYHorfMNXaz_uLIuytb6Wl9vccnaCA34VptmoFlJtFtwrQECRvrpl0J1c_k2-xKi_w6c1vVelRcFSBnw",
+        "key_id": "cKfxYW0Mjvs61lL8BV5pPRE4C-Ha_iRQQ6SrcOfjN7g"
+      },
+      "expected": {
+        "valid": false,
+        "code": "SIGNATURE_INVALID"
+      }
+    },
+    {
+      "id": "hash-alerta-no-coincide",
+      "description": "EVENTO legítimo cuyo hash_alerta corresponde a otra alerta",
+      "evento": {
+        "payload_canonico": "eyJhY2Npb24iOiJDQU5DRUxBQ0lPTiIsImFsZXJ0YV9pZCI6IjNmMWM5YTUyLThkM2UtNGMxYi05ZjZhLTJiN2Q1ZTFhMGMxMSIsImVtaXNvcl9pZCI6IjliMmU3ZjEwLTRhNmQtNGQ1OC04YzMzLTVlMGYxYTdiMmQ0NCIsImVtaXRpZGFfZW4iOiIyMDI2LTEwLTI2VDE1OjAwOjAwWiIsImV2ZW50b19pZCI6ImM0ZDhhMWU2LTdiNTItNGYwOS1hMWQzLTZlOGI5YzBmMmE3NyIsImhhc2hfYWxlcnRhIjoiNWZkN2FkNDJkZDIxYWVkMWY2YjA0YmQxMjcyZjA2MzU2ZmQxM2FiNmE2MTk0NjU5YTdmMDhjNjNiZTAzOGU2ZSIsImtleV9pZCI6ImNLZnhZVzBNanZzNjFsTDhCVjVwUFJFNEMtSGFfaVJRUTZTcmNPZmpON2ciLCJ0aXBvX2RvYyI6IkVWRU5UTyIsInZlcnNpb24iOjF9",
+        "hash_payload": "368d6362f6f7793cc47777433012627205b405259fee9b13e01ea3ebfc8d47c2",
+        "firma": "WKGsIFgqLqtr1H93fZiqpm3jCuLxwWdaTeqssOZlXei4Dljds6NlzBhjiJdHdVgnh1wLaYx5cwsu7D8epQBr9g",
+        "key_id": "cKfxYW0Mjvs61lL8BV5pPRE4C-Ha_iRQQ6SrcOfjN7g"
+      },
+      "expected": {
+        "valid": false,
+        "code": "CANCELACION_HASH_MISMATCH"
+      }
+    },
+    {
+      "id": "hash-alerta-inventado",
+      "description": "EVENTO legítimo con un hash_alerta que no es de ninguna alerta",
+      "evento": {
+        "payload_canonico": "eyJhY2Npb24iOiJDQU5DRUxBQ0lPTiIsImFsZXJ0YV9pZCI6IjNmMWM5YTUyLThkM2UtNGMxYi05ZjZhLTJiN2Q1ZTFhMGMxMSIsImVtaXNvcl9pZCI6IjliMmU3ZjEwLTRhNmQtNGQ1OC04YzMzLTVlMGYxYTdiMmQ0NCIsImVtaXRpZGFfZW4iOiIyMDI2LTEwLTI2VDE1OjAwOjAwWiIsImV2ZW50b19pZCI6ImM0ZDhhMWU2LTdiNTItNGYwOS1hMWQzLTZlOGI5YzBmMmE3NyIsImhhc2hfYWxlcnRhIjoiZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZiIsImtleV9pZCI6ImNLZnhZVzBNanZzNjFsTDhCVjVwUFJFNEMtSGFfaVJRUTZTcmNPZmpON2ciLCJ0aXBvX2RvYyI6IkVWRU5UTyIsInZlcnNpb24iOjF9",
+        "hash_payload": "68c6e73369e2e1aa92635779d8bde715232313f82f1ee7c56181daebe6157efb",
+        "firma": "YD3e_s8mTgX8ntCtHRusyYzYjeLZCLga3q8-RP0gUYLR-LZpKcuqCxdJslqVKvjCZ7K0IhzVL2_dd871dXW5vg",
+        "key_id": "cKfxYW0Mjvs61lL8BV5pPRE4C-Ha_iRQQ6SrcOfjN7g"
+      },
+      "expected": {
+        "valid": false,
+        "code": "CANCELACION_HASH_MISMATCH"
+      }
+    },
+    {
+      "id": "firma-de-alerta-como-evento",
+      "description": "Se presenta como evento la firma válida de otra ALERTA",
+      "evento": {
+        "payload_canonico": "eyJhbGVydGFfaWQiOiI3ZTRiMWQzNi05YTAyLTRjNTgtYjFmNy0wZDZjM2E1ZThiOTIiLCJlbWlzb3JfaWQiOiI5YjJlN2YxMC00YTZkLTRkNTgtOGMzMy01ZTBmMWE3YjJkNDQiLCJlbWl0aWRhX2VuIjoiMjAyNi0xMC0yNlQxNDowNTowOVoiLCJleHBpcmFfZW4iOiIyMDI2LTEwLTI2VDIwOjA1OjA5WiIsImtleV9pZCI6ImNLZnhZVzBNanZzNjFsTDhCVjVwUFJFNEMtSGFfaVJRUTZTcmNPZmpON2ciLCJtZW5zYWplIjoiT3RybyBtZW5zYWplIGRlIGFsZXJ0YSBkaXN0aW50by4iLCJzZXZlcmlkYWQiOiJOQVJBTkpBIiwidGlwbyI6IklOVU5EQUNJT04iLCJ0aXBvX2RvYyI6IkFMRVJUQSIsInZlcnNpb24iOjEsInpvbmEiOnsiZGVwYXJ0YW1lbnRvIjoiU0FOVEFfQ1JVWiIsIm11bmljaXBpbyI6Ildhcm5lcyJ9fQ",
+        "hash_payload": "5fd7ad42dd21aed1f6b04bd1272f06356fd13ab6a6194659a7f08c63be038e6e",
+        "firma": "Btg5JEDqA3tEjdNu9fDFpj00trheWlvdyAmSR0OfTWdmvO8I1A5gUogZjKNwYGxoTNj_FLbAfi4Tvvz5iFsF3A",
+        "key_id": "cKfxYW0Mjvs61lL8BV5pPRE4C-Ha_iRQQ6SrcOfjN7g"
+      },
+      "expected": {
+        "valid": false,
+        "code": "TIPO_DOC_MISMATCH"
+      }
+    },
+    {
+      "id": "evento-de-otra-alerta",
+      "description": "EVENTO legítimo para otra alerta_id pero con el hash de esta alerta",
+      "evento": {
+        "payload_canonico": "eyJhY2Npb24iOiJDQU5DRUxBQ0lPTiIsImFsZXJ0YV9pZCI6IjdlNGIxZDM2LTlhMDItNGM1OC1iMWY3LTBkNmMzYTVlOGI5MiIsImVtaXNvcl9pZCI6IjliMmU3ZjEwLTRhNmQtNGQ1OC04YzMzLTVlMGYxYTdiMmQ0NCIsImVtaXRpZGFfZW4iOiIyMDI2LTEwLTI2VDE1OjAwOjAwWiIsImV2ZW50b19pZCI6ImM0ZDhhMWU2LTdiNTItNGYwOS1hMWQzLTZlOGI5YzBmMmE3NyIsImhhc2hfYWxlcnRhIjoiNGFhMzExZjg0NmRkMjIxMzFmM2E3NjAwNzQ0ZWZkZWM2MzBhYzA4MjYzYzk0ZGU5MDJlOTNkZDUwYmZkNjRiMiIsImtleV9pZCI6ImNLZnhZVzBNanZzNjFsTDhCVjVwUFJFNEMtSGFfaVJRUTZTcmNPZmpON2ciLCJ0aXBvX2RvYyI6IkVWRU5UTyIsInZlcnNpb24iOjF9",
+        "hash_payload": "845706c7b59e9241925fd98af1ff6715339571ea40e037ef5b9a2544588bc6ae",
+        "firma": "8BhHvIUwLD9O_Lg-F2wwe0T2L7Gm2s77VVRtkXaMFRuZezLJlXhwpdKdFtK6mDx-UvgkCtXVbF72yKpxLAQpUw",
+        "key_id": "cKfxYW0Mjvs61lL8BV5pPRE4C-Ha_iRQQ6SrcOfjN7g"
+      },
+      "expected": {
+        "valid": false,
+        "code": "CANCELACION_ALERTA_MISMATCH"
+      }
+    },
+    {
+      "id": "evento-de-otro-emisor",
+      "description": "EVENTO legítimo emitido por un emisor distinto del de la alerta",
+      "evento": {
+        "payload_canonico": "eyJhY2Npb24iOiJDQU5DRUxBQ0lPTiIsImFsZXJ0YV9pZCI6IjNmMWM5YTUyLThkM2UtNGMxYi05ZjZhLTJiN2Q1ZTFhMGMxMSIsImVtaXNvcl9pZCI6IjVkN2EzYzkyLTFlNDgtNGIwZi1hNmM1LTNmOWU4ZDJiN2ExMCIsImVtaXRpZGFfZW4iOiIyMDI2LTEwLTI2VDE1OjAwOjAwWiIsImV2ZW50b19pZCI6ImM0ZDhhMWU2LTdiNTItNGYwOS1hMWQzLTZlOGI5YzBmMmE3NyIsImhhc2hfYWxlcnRhIjoiNGFhMzExZjg0NmRkMjIxMzFmM2E3NjAwNzQ0ZWZkZWM2MzBhYzA4MjYzYzk0ZGU5MDJlOTNkZDUwYmZkNjRiMiIsImtleV9pZCI6ImNLZnhZVzBNanZzNjFsTDhCVjVwUFJFNEMtSGFfaVJRUTZTcmNPZmpON2ciLCJ0aXBvX2RvYyI6IkVWRU5UTyIsInZlcnNpb24iOjF9",
+        "hash_payload": "fb47634fc33a576a430da032d0fe7158de1cabcb24b58d28ae6d46df3a8d5efb",
+        "firma": "M6HCtZOvi45Bcn8X1sk3KFFwYo3kbaEmOJ5JNqgV34fC0yyJS9GbNPOuxoMU30tpYy6SmUGObuZaaDjufi3jWg",
+        "key_id": "cKfxYW0Mjvs61lL8BV5pPRE4C-Ha_iRQQ6SrcOfjN7g"
+      },
+      "expected": {
+        "valid": false,
+        "code": "CANCELACION_EMISOR_MISMATCH"
+      }
+    },
+    {
+      "id": "evento-con-hash-alterado-tras-firmar",
+      "description": "EVENTO con hash_alerta cambiado después de firmar (hash_payload recalculado, firma original)",
+      "evento": {
+        "payload_canonico": "eyJhY2Npb24iOiJDQU5DRUxBQ0lPTiIsImFsZXJ0YV9pZCI6IjNmMWM5YTUyLThkM2UtNGMxYi05ZjZhLTJiN2Q1ZTFhMGMxMSIsImVtaXNvcl9pZCI6IjliMmU3ZjEwLTRhNmQtNGQ1OC04YzMzLTVlMGYxYTdiMmQ0NCIsImVtaXRpZGFfZW4iOiIyMDI2LTEwLTI2VDE1OjAwOjAwWiIsImV2ZW50b19pZCI6ImM0ZDhhMWU2LTdiNTItNGYwOS1hMWQzLTZlOGI5YzBmMmE3NyIsImhhc2hfYWxlcnRhIjoiZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZmZiIsImtleV9pZCI6ImNLZnhZVzBNanZzNjFsTDhCVjVwUFJFNEMtSGFfaVJRUTZTcmNPZmpON2ciLCJ0aXBvX2RvYyI6IkVWRU5UTyIsInZlcnNpb24iOjF9",
+        "hash_payload": "68c6e73369e2e1aa92635779d8bde715232313f82f1ee7c56181daebe6157efb",
+        "firma": "W9lOpJht-Nx1AYljFh5M_cP2FaADf9w55mOtgWh9zNbt8mRhcoCNwWsxzMYF7OkaclNJe_2bwu6SSL3LezIDzQ",
+        "key_id": "cKfxYW0Mjvs61lL8BV5pPRE4C-Ha_iRQQ6SrcOfjN7g"
+      },
+      "expected": {
+        "valid": false,
+        "code": "SIGNATURE_INVALID"
+      }
+    }
+  ]
+}

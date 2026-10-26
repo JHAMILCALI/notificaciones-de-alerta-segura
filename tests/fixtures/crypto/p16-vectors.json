@@ -1,0 +1,174 @@
+{
+  "$comment": "Generado por packages/verification/scripts/generate-p16-vectors.ts con una clave ECDSA P-256 efimera ya descartada. Solo contiene la clave publica, sobres firmados y el resultado esperado de verifyDocument.",
+  "publicKeyJwk": {
+    "kty": "EC",
+    "crv": "P-256",
+    "x": "5APXkcb0BI5lnVCyw-AXe7uoPG37lYaMu_7G6KlR8y8",
+    "y": "UYCquHtkkWHPqImEGqTa90U73EK3U3fav43vpJucbp4"
+  },
+  "keyId": "RJcsON0EvwiPGMqCLeSERSH1zf7fzZzsPic1k_vZeOo",
+  "vectors": [
+    {
+      "id": "ok-alerta",
+      "description": "Control: ALERTA legítima verificada como ALERTA",
+      "tipoEsperado": "ALERTA",
+      "envelope": {
+        "payload_canonico": "eyJhbGVydGFfaWQiOiIzZjFjOWE1Mi04ZDNlLTRjMWItOWY2YS0yYjdkNWUxYTBjMTEiLCJlbWlzb3JfaWQiOiI5YjJlN2YxMC00YTZkLTRkNTgtOGMzMy01ZTBmMWE3YjJkNDQiLCJlbWl0aWRhX2VuIjoiMjAyNi0xMC0yNlQxNDowNTowOVoiLCJleHBpcmFfZW4iOiIyMDI2LTEwLTI2VDIwOjA1OjA5WiIsImtleV9pZCI6IlJKY3NPTjBFdndpUEdNcUNMZVNFUlNIMXpmN2Z6WnpzUGljMWtfdlplT28iLCJtZW5zYWplIjoiRGVzYm9yZGUgZGVsIHLDrW8gUGlyYcOtIGVuIGxhIHpvbmEgbm9ydGU6IGV2YWN1YXIgaGFjaWEgdGVycmVubyBhbHRvLiIsInNldmVyaWRhZCI6Ik5BUkFOSkEiLCJ0aXBvIjoiSU5VTkRBQ0lPTiIsInRpcG9fZG9jIjoiQUxFUlRBIiwidmVyc2lvbiI6MSwiem9uYSI6eyJkZXBhcnRhbWVudG8iOiJTQU5UQV9DUlVaIiwibXVuaWNpcGlvIjoiV2FybmVzIn19",
+        "hash_payload": "384ae492c938a3fe2a1c620305e9c7d863eb6d969f198258420e4f9d2d49eb2d",
+        "firma": "B6sCcOkimMKF7AZ9VMaErDGNw22Uq64E5gzYYx34leCEoodx51Naeu9fGs0ZOPI8tDsWstof7c3mCfo07RwXTA",
+        "key_id": "RJcsON0EvwiPGMqCLeSERSH1zf7fzZzsPic1k_vZeOo"
+      },
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "id": "ok-evento",
+      "description": "Control: EVENTO legítimo verificado como EVENTO",
+      "tipoEsperado": "EVENTO",
+      "envelope": {
+        "payload_canonico": "eyJhY2Npb24iOiJDQU5DRUxBQ0lPTiIsImFsZXJ0YV9pZCI6IjNmMWM5YTUyLThkM2UtNGMxYi05ZjZhLTJiN2Q1ZTFhMGMxMSIsImVtaXNvcl9pZCI6IjliMmU3ZjEwLTRhNmQtNGQ1OC04YzMzLTVlMGYxYTdiMmQ0NCIsImVtaXRpZGFfZW4iOiIyMDI2LTEwLTI2VDE1OjAwOjAwWiIsImV2ZW50b19pZCI6ImM0ZDhhMWU2LTdiNTItNGYwOS1hMWQzLTZlOGI5YzBmMmE3NyIsImhhc2hfYWxlcnRhIjoiMzg0YWU0OTJjOTM4YTNmZTJhMWM2MjAzMDVlOWM3ZDg2M2ViNmQ5NjlmMTk4MjU4NDIwZTRmOWQyZDQ5ZWIyZCIsImtleV9pZCI6IlJKY3NPTjBFdndpUEdNcUNMZVNFUlNIMXpmN2Z6WnpzUGljMWtfdlplT28iLCJ0aXBvX2RvYyI6IkVWRU5UTyIsInZlcnNpb24iOjF9",
+        "hash_payload": "9e93966b6e9b6a763896c31265ae764f1c644f319991cf1a578364f063bf6c88",
+        "firma": "xlRZgQR4qiDdUWN0_kRp9kawESvSXCYahjuAbScX8CHyCBpoF_47oIbo3M4CZAq8x9QrNr0ByCewaQgv6E1uYg",
+        "key_id": "RJcsON0EvwiPGMqCLeSERSH1zf7fzZzsPic1k_vZeOo"
+      },
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "id": "ok-estado",
+      "description": "Control: ESTADO legítimo verificado como ESTADO",
+      "tipoEsperado": "ESTADO",
+      "envelope": {
+        "payload_canonico": "eyJhbGVydGFfaWQiOiIzZjFjOWE1Mi04ZDNlLTRjMWItOWY2YS0yYjdkNWUxYTBjMTEiLCJlc3RhZG8iOiJWSUdFTlRFIiwiZXhwaXJlc19hdCI6IjIwMjYtMTAtMjZUMTQ6MTU6MTBaIiwiaXNzdWVkX2F0IjoiMjAyNi0xMC0yNlQxNDowNToxMFoiLCJrZXlfaWQiOiJSSmNzT04wRXZ3aVBHTXFDTGVTRVJTSDF6Zjdmelp6c1BpYzFrX3ZaZU9vIiwic2VjdWVuY2lhIjowLCJ0aXBvX2RvYyI6IkVTVEFETyIsInVsdGltb19ldmVudG9faGFzaCI6bnVsbCwidmVyc2lvbiI6MX0",
+        "hash_payload": "a376a48913c2e4f9cca54fb54b847890103ecef9f07fdba08cdc5beca8ab4e41",
+        "firma": "fmYWnQuRuea1rjHiOvQcR4o6eED2SzPmsPZjzuK_SpW5AEeS8X1faa40w-xTs4yn8Sgcbd1SefWNAvz1HroAGw",
+        "key_id": "RJcsON0EvwiPGMqCLeSERSH1zf7fzZzsPic1k_vZeOo"
+      },
+      "expected": {
+        "valid": true
+      }
+    },
+    {
+      "id": "evento-como-alerta",
+      "description": "La firma válida de un EVENTO presentada como ALERTA",
+      "tipoEsperado": "ALERTA",
+      "envelope": {
+        "payload_canonico": "eyJhY2Npb24iOiJDQU5DRUxBQ0lPTiIsImFsZXJ0YV9pZCI6IjNmMWM5YTUyLThkM2UtNGMxYi05ZjZhLTJiN2Q1ZTFhMGMxMSIsImVtaXNvcl9pZCI6IjliMmU3ZjEwLTRhNmQtNGQ1OC04YzMzLTVlMGYxYTdiMmQ0NCIsImVtaXRpZGFfZW4iOiIyMDI2LTEwLTI2VDE1OjAwOjAwWiIsImV2ZW50b19pZCI6ImM0ZDhhMWU2LTdiNTItNGYwOS1hMWQzLTZlOGI5YzBmMmE3NyIsImhhc2hfYWxlcnRhIjoiMzg0YWU0OTJjOTM4YTNmZTJhMWM2MjAzMDVlOWM3ZDg2M2ViNmQ5NjlmMTk4MjU4NDIwZTRmOWQyZDQ5ZWIyZCIsImtleV9pZCI6IlJKY3NPTjBFdndpUEdNcUNMZVNFUlNIMXpmN2Z6WnpzUGljMWtfdlplT28iLCJ0aXBvX2RvYyI6IkVWRU5UTyIsInZlcnNpb24iOjF9",
+        "hash_payload": "9e93966b6e9b6a763896c31265ae764f1c644f319991cf1a578364f063bf6c88",
+        "firma": "xlRZgQR4qiDdUWN0_kRp9kawESvSXCYahjuAbScX8CHyCBpoF_47oIbo3M4CZAq8x9QrNr0ByCewaQgv6E1uYg",
+        "key_id": "RJcsON0EvwiPGMqCLeSERSH1zf7fzZzsPic1k_vZeOo"
+      },
+      "expected": {
+        "valid": false,
+        "code": "TIPO_DOC_MISMATCH"
+      }
+    },
+    {
+      "id": "alerta-como-evento",
+      "description": "La firma válida de una ALERTA presentada como EVENTO",
+      "tipoEsperado": "EVENTO",
+      "envelope": {
+        "payload_canonico": "eyJhbGVydGFfaWQiOiIzZjFjOWE1Mi04ZDNlLTRjMWItOWY2YS0yYjdkNWUxYTBjMTEiLCJlbWlzb3JfaWQiOiI5YjJlN2YxMC00YTZkLTRkNTgtOGMzMy01ZTBmMWE3YjJkNDQiLCJlbWl0aWRhX2VuIjoiMjAyNi0xMC0yNlQxNDowNTowOVoiLCJleHBpcmFfZW4iOiIyMDI2LTEwLTI2VDIwOjA1OjA5WiIsImtleV9pZCI6IlJKY3NPTjBFdndpUEdNcUNMZVNFUlNIMXpmN2Z6WnpzUGljMWtfdlplT28iLCJtZW5zYWplIjoiRGVzYm9yZGUgZGVsIHLDrW8gUGlyYcOtIGVuIGxhIHpvbmEgbm9ydGU6IGV2YWN1YXIgaGFjaWEgdGVycmVubyBhbHRvLiIsInNldmVyaWRhZCI6Ik5BUkFOSkEiLCJ0aXBvIjoiSU5VTkRBQ0lPTiIsInRpcG9fZG9jIjoiQUxFUlRBIiwidmVyc2lvbiI6MSwiem9uYSI6eyJkZXBhcnRhbWVudG8iOiJTQU5UQV9DUlVaIiwibXVuaWNpcGlvIjoiV2FybmVzIn19",
+        "hash_payload": "384ae492c938a3fe2a1c620305e9c7d863eb6d969f198258420e4f9d2d49eb2d",
+        "firma": "B6sCcOkimMKF7AZ9VMaErDGNw22Uq64E5gzYYx34leCEoodx51Naeu9fGs0ZOPI8tDsWstof7c3mCfo07RwXTA",
+        "key_id": "RJcsON0EvwiPGMqCLeSERSH1zf7fzZzsPic1k_vZeOo"
+      },
+      "expected": {
+        "valid": false,
+        "code": "TIPO_DOC_MISMATCH"
+      }
+    },
+    {
+      "id": "estado-como-evento",
+      "description": "La firma válida de un ESTADO presentada como EVENTO",
+      "tipoEsperado": "EVENTO",
+      "envelope": {
+        "payload_canonico": "eyJhbGVydGFfaWQiOiIzZjFjOWE1Mi04ZDNlLTRjMWItOWY2YS0yYjdkNWUxYTBjMTEiLCJlc3RhZG8iOiJWSUdFTlRFIiwiZXhwaXJlc19hdCI6IjIwMjYtMTAtMjZUMTQ6MTU6MTBaIiwiaXNzdWVkX2F0IjoiMjAyNi0xMC0yNlQxNDowNToxMFoiLCJrZXlfaWQiOiJSSmNzT04wRXZ3aVBHTXFDTGVTRVJTSDF6Zjdmelp6c1BpYzFrX3ZaZU9vIiwic2VjdWVuY2lhIjowLCJ0aXBvX2RvYyI6IkVTVEFETyIsInVsdGltb19ldmVudG9faGFzaCI6bnVsbCwidmVyc2lvbiI6MX0",
+        "hash_payload": "a376a48913c2e4f9cca54fb54b847890103ecef9f07fdba08cdc5beca8ab4e41",
+        "firma": "fmYWnQuRuea1rjHiOvQcR4o6eED2SzPmsPZjzuK_SpW5AEeS8X1faa40w-xTs4yn8Sgcbd1SefWNAvz1HroAGw",
+        "key_id": "RJcsON0EvwiPGMqCLeSERSH1zf7fzZzsPic1k_vZeOo"
+      },
+      "expected": {
+        "valid": false,
+        "code": "TIPO_DOC_MISMATCH"
+      }
+    },
+    {
+      "id": "estado-como-alerta",
+      "description": "La firma válida de un ESTADO presentada como ALERTA",
+      "tipoEsperado": "ALERTA",
+      "envelope": {
+        "payload_canonico": "eyJhbGVydGFfaWQiOiIzZjFjOWE1Mi04ZDNlLTRjMWItOWY2YS0yYjdkNWUxYTBjMTEiLCJlc3RhZG8iOiJWSUdFTlRFIiwiZXhwaXJlc19hdCI6IjIwMjYtMTAtMjZUMTQ6MTU6MTBaIiwiaXNzdWVkX2F0IjoiMjAyNi0xMC0yNlQxNDowNToxMFoiLCJrZXlfaWQiOiJSSmNzT04wRXZ3aVBHTXFDTGVTRVJTSDF6Zjdmelp6c1BpYzFrX3ZaZU9vIiwic2VjdWVuY2lhIjowLCJ0aXBvX2RvYyI6IkVTVEFETyIsInVsdGltb19ldmVudG9faGFzaCI6bnVsbCwidmVyc2lvbiI6MX0",
+        "hash_payload": "a376a48913c2e4f9cca54fb54b847890103ecef9f07fdba08cdc5beca8ab4e41",
+        "firma": "fmYWnQuRuea1rjHiOvQcR4o6eED2SzPmsPZjzuK_SpW5AEeS8X1faa40w-xTs4yn8Sgcbd1SefWNAvz1HroAGw",
+        "key_id": "RJcsON0EvwiPGMqCLeSERSH1zf7fzZzsPic1k_vZeOo"
+      },
+      "expected": {
+        "valid": false,
+        "code": "TIPO_DOC_MISMATCH"
+      }
+    },
+    {
+      "id": "tipo-doc-cambiado",
+      "description": "ALERTA firmada con tipo_doc cambiado a EVENTO después de firmar (hash recalculado, firma original)",
+      "tipoEsperado": "EVENTO",
+      "envelope": {
+        "payload_canonico": "eyJhbGVydGFfaWQiOiIzZjFjOWE1Mi04ZDNlLTRjMWItOWY2YS0yYjdkNWUxYTBjMTEiLCJlbWlzb3JfaWQiOiI5YjJlN2YxMC00YTZkLTRkNTgtOGMzMy01ZTBmMWE3YjJkNDQiLCJlbWl0aWRhX2VuIjoiMjAyNi0xMC0yNlQxNDowNTowOVoiLCJleHBpcmFfZW4iOiIyMDI2LTEwLTI2VDIwOjA1OjA5WiIsImtleV9pZCI6IlJKY3NPTjBFdndpUEdNcUNMZVNFUlNIMXpmN2Z6WnpzUGljMWtfdlplT28iLCJtZW5zYWplIjoiRGVzYm9yZGUgZGVsIHLDrW8gUGlyYcOtIGVuIGxhIHpvbmEgbm9ydGU6IGV2YWN1YXIgaGFjaWEgdGVycmVubyBhbHRvLiIsInNldmVyaWRhZCI6Ik5BUkFOSkEiLCJ0aXBvIjoiSU5VTkRBQ0lPTiIsInRpcG9fZG9jIjoiRVZFTlRPIiwidmVyc2lvbiI6MSwiem9uYSI6eyJkZXBhcnRhbWVudG8iOiJTQU5UQV9DUlVaIiwibXVuaWNpcGlvIjoiV2FybmVzIn19",
+        "hash_payload": "729d6796c7f5773f3ec7f894e11ba0e81b03d5264b7ac87f58c3e0c9cb487cd5",
+        "firma": "B6sCcOkimMKF7AZ9VMaErDGNw22Uq64E5gzYYx34leCEoodx51Naeu9fGs0ZOPI8tDsWstof7c3mCfo07RwXTA",
+        "key_id": "RJcsON0EvwiPGMqCLeSERSH1zf7fzZzsPic1k_vZeOo"
+      },
+      "expected": {
+        "valid": false,
+        "code": "SIGNATURE_INVALID"
+      }
+    },
+    {
+      "id": "tipo-doc-cambiado-sin-recalcular-hash",
+      "description": "ALERTA con tipo_doc cambiado y el hash_payload original",
+      "tipoEsperado": "EVENTO",
+      "envelope": {
+        "payload_canonico": "eyJhbGVydGFfaWQiOiIzZjFjOWE1Mi04ZDNlLTRjMWItOWY2YS0yYjdkNWUxYTBjMTEiLCJlbWlzb3JfaWQiOiI5YjJlN2YxMC00YTZkLTRkNTgtOGMzMy01ZTBmMWE3YjJkNDQiLCJlbWl0aWRhX2VuIjoiMjAyNi0xMC0yNlQxNDowNTowOVoiLCJleHBpcmFfZW4iOiIyMDI2LTEwLTI2VDIwOjA1OjA5WiIsImtleV9pZCI6IlJKY3NPTjBFdndpUEdNcUNMZVNFUlNIMXpmN2Z6WnpzUGljMWtfdlplT28iLCJtZW5zYWplIjoiRGVzYm9yZGUgZGVsIHLDrW8gUGlyYcOtIGVuIGxhIHpvbmEgbm9ydGU6IGV2YWN1YXIgaGFjaWEgdGVycmVubyBhbHRvLiIsInNldmVyaWRhZCI6Ik5BUkFOSkEiLCJ0aXBvIjoiSU5VTkRBQ0lPTiIsInRpcG9fZG9jIjoiRVZFTlRPIiwidmVyc2lvbiI6MSwiem9uYSI6eyJkZXBhcnRhbWVudG8iOiJTQU5UQV9DUlVaIiwibXVuaWNpcGlvIjoiV2FybmVzIn19",
+        "hash_payload": "384ae492c938a3fe2a1c620305e9c7d863eb6d969f198258420e4f9d2d49eb2d",
+        "firma": "B6sCcOkimMKF7AZ9VMaErDGNw22Uq64E5gzYYx34leCEoodx51Naeu9fGs0ZOPI8tDsWstof7c3mCfo07RwXTA",
+        "key_id": "RJcsON0EvwiPGMqCLeSERSH1zf7fzZzsPic1k_vZeOo"
+      },
+      "expected": {
+        "valid": false,
+        "code": "HASH_MISMATCH"
+      }
+    },
+    {
+      "id": "bytes-de-un-documento-con-firma-de-otro",
+      "description": "Bytes y hash de una ALERTA con la firma de otra ALERTA del mismo firmante",
+      "tipoEsperado": "ALERTA",
+      "envelope": {
+        "payload_canonico": "eyJhbGVydGFfaWQiOiIzZjFjOWE1Mi04ZDNlLTRjMWItOWY2YS0yYjdkNWUxYTBjMTEiLCJlbWlzb3JfaWQiOiI5YjJlN2YxMC00YTZkLTRkNTgtOGMzMy01ZTBmMWE3YjJkNDQiLCJlbWl0aWRhX2VuIjoiMjAyNi0xMC0yNlQxNDowNTowOVoiLCJleHBpcmFfZW4iOiIyMDI2LTEwLTI2VDIwOjA1OjA5WiIsImtleV9pZCI6IlJKY3NPTjBFdndpUEdNcUNMZVNFUlNIMXpmN2Z6WnpzUGljMWtfdlplT28iLCJtZW5zYWplIjoiRGVzYm9yZGUgZGVsIHLDrW8gUGlyYcOtIGVuIGxhIHpvbmEgbm9ydGU6IGV2YWN1YXIgaGFjaWEgdGVycmVubyBhbHRvLiIsInNldmVyaWRhZCI6Ik5BUkFOSkEiLCJ0aXBvIjoiSU5VTkRBQ0lPTiIsInRpcG9fZG9jIjoiQUxFUlRBIiwidmVyc2lvbiI6MSwiem9uYSI6eyJkZXBhcnRhbWVudG8iOiJTQU5UQV9DUlVaIiwibXVuaWNpcGlvIjoiV2FybmVzIn19",
+        "hash_payload": "384ae492c938a3fe2a1c620305e9c7d863eb6d969f198258420e4f9d2d49eb2d",
+        "firma": "I_w935xnjPERueTd-YmqtCXSmXIu7C8kDiXLVsCZN3jkd8tjZWViyNLO39-pLUtHjtWuYbVSJXMeUK4UY2IC1g",
+        "key_id": "RJcsON0EvwiPGMqCLeSERSH1zf7fzZzsPic1k_vZeOo"
+      },
+      "expected": {
+        "valid": false,
+        "code": "SIGNATURE_INVALID"
+      }
+    },
+    {
+      "id": "bytes-de-alerta-con-firma-de-evento",
+      "description": "Bytes y hash de una ALERTA con la firma de un EVENTO",
+      "tipoEsperado": "ALERTA",
+      "envelope": {
+        "payload_canonico": "eyJhbGVydGFfaWQiOiIzZjFjOWE1Mi04ZDNlLTRjMWItOWY2YS0yYjdkNWUxYTBjMTEiLCJlbWlzb3JfaWQiOiI5YjJlN2YxMC00YTZkLTRkNTgtOGMzMy01ZTBmMWE3YjJkNDQiLCJlbWl0aWRhX2VuIjoiMjAyNi0xMC0yNlQxNDowNTowOVoiLCJleHBpcmFfZW4iOiIyMDI2LTEwLTI2VDIwOjA1OjA5WiIsImtleV9pZCI6IlJKY3NPTjBFdndpUEdNcUNMZVNFUlNIMXpmN2Z6WnpzUGljMWtfdlplT28iLCJtZW5zYWplIjoiRGVzYm9yZGUgZGVsIHLDrW8gUGlyYcOtIGVuIGxhIHpvbmEgbm9ydGU6IGV2YWN1YXIgaGFjaWEgdGVycmVubyBhbHRvLiIsInNldmVyaWRhZCI6Ik5BUkFOSkEiLCJ0aXBvIjoiSU5VTkRBQ0lPTiIsInRpcG9fZG9jIjoiQUxFUlRBIiwidmVyc2lvbiI6MSwiem9uYSI6eyJkZXBhcnRhbWVudG8iOiJTQU5UQV9DUlVaIiwibXVuaWNpcGlvIjoiV2FybmVzIn19",
+        "hash_payload": "384ae492c938a3fe2a1c620305e9c7d863eb6d969f198258420e4f9d2d49eb2d",
+        "firma": "xlRZgQR4qiDdUWN0_kRp9kawESvSXCYahjuAbScX8CHyCBpoF_47oIbo3M4CZAq8x9QrNr0ByCewaQgv6E1uYg",
+        "key_id": "RJcsON0EvwiPGMqCLeSERSH1zf7fzZzsPic1k_vZeOo"
+      },
+      "expected": {
+        "valid": false,
+        "code": "SIGNATURE_INVALID"
+      }
+    }
+  ]
+}
