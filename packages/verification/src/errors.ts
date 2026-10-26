@@ -20,7 +20,19 @@ export class CanonicalizationError extends Error {
 export type VerificationErrorCode =
   | 'INVALID_BASE64URL'
   | 'INVALID_PUBLIC_KEY'
-  | 'PRIVATE_KEY_REJECTED';
+  | 'PRIVATE_KEY_REJECTED'
+  // Verificación de documentos firmados (semana 2)
+  | 'INVALID_ENVELOPE'
+  | 'KEY_ID_MISMATCH'
+  | 'HASH_MISMATCH'
+  | 'SIGNATURE_INVALID'
+  | 'NOT_CANONICAL'
+  | 'INVALID_PAYLOAD'
+  | 'TIPO_DOC_MISMATCH'
+  | 'MANIFEST_EXPIRED'
+  | 'MANIFEST_TOO_LONG'
+  | 'MANIFEST_VERSION_TOO_LOW'
+  | 'MANIFEST_INCONSISTENT';
 
 export class VerificationError extends Error {
   readonly code: VerificationErrorCode;
