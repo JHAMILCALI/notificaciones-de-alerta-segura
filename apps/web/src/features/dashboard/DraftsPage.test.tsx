@@ -263,3 +263,97 @@ describe('publicar un borrador', () => {
     expect(calls(fetchMock).filter((c) => c.url.endsWith('/publish'))).toHaveLength(1)
   })
 })
+
+describe('cancelar una alerta publicada', () => {
+  const publishedDraft = { ...draft, status: 'PUBLISHED', alertaId: ALERTA_ID }
+
+  function cancelRoutes(cancel: () => Response, user = issuer) {
+    return makeFetch((call) => {
+      if (call.url.endsWith('/auth/me')) return jsonResponse({ user })
+      if (call.url.endsWith('/auth/csrf')) return jsonResponse({ csrfToken: 'tok-draft' })
+      if (call.url.endsWith('/cancel')) return cancel()
+      return jsonResponse({ drafts: [publishedDraft] })
+    })
+  }
+
+  it('pide confirmación, envía POST /alerts/:id/cancel con {} y CSRF, y marca la alerta como cancelada', async () => {
+    const user = userEvent.setup({ delay: null })
+    const fetchMock = cancelRoutes(() => jsonResponse({ alerta: alertaPublicada }, { status: 201 }))
+    renderApp({ fetchMock, route: '/panel/borradores' })
+
+    await user.click(await screen.findByRole('button', { name: /Cancelar la alerta/ }))
+    // Todavía no se ha enviado nada: falta confirmar.
+    expect(calls(fetchMock).some((c) => c.url.endsWith('/cancel'))).toBe(false)
+    expect(screen.getByText(/no se puede deshacer/)).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Sí, cancelar alerta' }))
+
+    expect(await screen.findByText('Cancelada')).toBeInTheDocument()
+    expect(screen.queryByText('Publicada')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Cancelar la alerta/ })).not.toBeInTheDocument()
+    const post = calls(fetchMock).find((c) => c.url.endsWith('/cancel'))
+    expect(post?.method).toBe('POST')
+    expect(post?.url).toBe(`/api/v1/alerts/${ALERTA_ID}/cancel`)
+    expect(post?.headers.get('X-CSRF-Token')).toBe('tok-draft')
+    expect(post?.body).toBe('{}')
+  })
+
+  it('"No, volver" descarta la confirmación sin llamar a la API', async () => {
+    const user = userEvent.setup({ delay: null })
+    const fetchMock = cancelRoutes(() => jsonResponse({ alerta: alertaPublicada }, { status: 201 }))
+    renderApp({ fetchMock, route: '/panel/borradores' })
+    await user.click(await screen.findByRole('button', { name: /Cancelar la alerta/ }))
+    await user.click(screen.getByRole('button', { name: 'No, volver' }))
+    expect(screen.getByRole('button', { name: /Cancelar la alerta/ })).toBeInTheDocument()
+    expect(calls(fetchMock).some((c) => c.url.endsWith('/cancel'))).toBe(false)
+  })
+
+  it('503 SIGNER_UNAVAILABLE: indica que no se canceló y permite reintentar', async () => {
+    const user = userEvent.setup({ delay: null })
+    renderApp({
+      fetchMock: cancelRoutes(() => errorResponse(503, 'SIGNER_UNAVAILABLE', 'Firmante no disponible')),
+      route: '/panel/borradores',
+    })
+    await user.click(await screen.findByRole('button', { name: /Cancelar la alerta/ }))
+    await user.click(screen.getByRole('button', { name: 'Sí, cancelar alerta' }))
+    expect(await within(await screen.findByRole('listitem')).findByRole('alert')).toHaveTextContent(
+      'La alerta no se canceló',
+    )
+    expect(screen.getByText('Publicada')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Sí, cancelar alerta' })).toBeEnabled()
+  })
+
+  it('403: solo el emisor puede cancelar', async () => {
+    const user = userEvent.setup({ delay: null })
+    renderApp({
+      fetchMock: cancelRoutes(() => errorResponse(403, 'FORBIDDEN', 'Denegado')),
+      route: '/panel/borradores',
+    })
+    await user.click(await screen.findByRole('button', { name: /Cancelar la alerta/ }))
+    await user.click(screen.getByRole('button', { name: 'Sí, cancelar alerta' }))
+    expect(await within(await screen.findByRole('listitem')).findByRole('alert')).toHaveTextContent(
+      'Solo el emisor de la alerta puede cancelarla.',
+    )
+  })
+
+  it('409: la alerta ya estaba cancelada y se muestra como cancelada', async () => {
+    const user = userEvent.setup({ delay: null })
+    renderApp({
+      fetchMock: cancelRoutes(() => errorResponse(409, 'CONFLICT', 'Ya cancelada')),
+      route: '/panel/borradores',
+    })
+    await user.click(await screen.findByRole('button', { name: /Cancelar la alerta/ }))
+    await user.click(screen.getByRole('button', { name: 'Sí, cancelar alerta' }))
+    expect(await screen.findByText('Cancelada')).toBeInTheDocument()
+    expect(screen.getByText('Esta alerta ya estaba cancelada.')).toBeInTheDocument()
+  })
+
+  it('sin el permiso alerts:cancel no se ofrece el botón', async () => {
+    const publisher = { ...issuer, permissions: ['drafts:create', 'drafts:read-own', 'alerts:publish'] }
+    renderApp({
+      fetchMock: cancelRoutes(() => jsonResponse({ alerta: alertaPublicada }, { status: 201 }), publisher),
+      route: '/panel/borradores',
+    })
+    await screen.findByText('Publicada')
+    expect(screen.queryByRole('button', { name: /Cancelar la alerta/ })).not.toBeInTheDocument()
+  })
+})

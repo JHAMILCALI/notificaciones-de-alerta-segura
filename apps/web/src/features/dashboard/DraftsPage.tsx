@@ -41,6 +41,18 @@ const FIELD_MESSAGES: Record<string, string> = {
   vigenciaHoras: `La vigencia debe ser un número entero de horas entre ${VIGENCIA_HORAS_MIN} y ${VIGENCIA_HORAS_MAX}.`,
 }
 
+function cancelErrorMessage(error: unknown): string {
+  if (isApiError(error)) {
+    if (error.code === 'SIGNER_UNAVAILABLE') {
+      return 'El servicio de firma no está disponible. La alerta no se canceló; inténtalo de nuevo en unos minutos.'
+    }
+    if (error.code === 'CONFLICT') return 'Esta alerta ya estaba cancelada.'
+    if (error.code === 'FORBIDDEN') return 'Solo el emisor de la alerta puede cancelarla.'
+    if (error.code === 'NOT_FOUND') return 'No se encontró la alerta.'
+  }
+  return describeError(error)
+}
+
 function publishErrorMessage(error: unknown): string {
   if (isApiError(error)) {
     if (error.code === 'SIGNER_UNAVAILABLE') {
@@ -52,10 +64,42 @@ function publishErrorMessage(error: unknown): string {
   return describeError(error)
 }
 
+interface CancelControlsProps {
+  alertaId: string
+  confirming: boolean
+  busy: boolean
+  disabled: boolean
+  onAsk(): void
+  onBack(): void
+  onConfirm(): void
+}
+
+function CancelControls({ alertaId, confirming, busy, disabled, onAsk, onBack, onConfirm }: CancelControlsProps) {
+  if (!confirming) {
+    return (
+      <button type="button" onClick={onAsk} disabled={disabled} aria-label={`Cancelar la alerta ${alertaId}`}>
+        Cancelar alerta
+      </button>
+    )
+  }
+  return (
+    <div className="actions" role="group" aria-label="Confirmar cancelación">
+      <p>La cancelación se firma y no se puede deshacer. ¿Cancelar esta alerta?</p>
+      <button type="button" className="primary" onClick={onConfirm} disabled={disabled}>
+        {busy ? 'Cancelando…' : 'Sí, cancelar alerta'}
+      </button>
+      <button type="button" onClick={onBack} disabled={disabled}>
+        No, volver
+      </button>
+    </div>
+  )
+}
+
 export function DraftsPage() {
   const api = useApi()
   const { state } = useAuth()
   const canPublish = state.user?.permissions.includes('alerts:publish') ?? false
+  const canCancel = state.user?.permissions.includes('alerts:cancel') ?? false
   const load = useCallback(() => api.listDrafts(), [api])
   const resource = useResource(load)
 
@@ -71,6 +115,12 @@ export function DraftsPage() {
   const [publishingId, setPublishingId] = useState<string | null>(null)
   const [publishError, setPublishError] = useState<{ draftId: string; message: string } | null>(null)
   const [published, setPublished] = useState<string | null>(null)
+
+  // Cancelar es irreversible: primero se pide confirmación (confirmingId) y luego se envía (cancellingId).
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
+  const [cancellingId, setCancellingId] = useState<string | null>(null)
+  const [cancelled, setCancelled] = useState<ReadonlySet<string>>(new Set())
+  const [cancelError, setCancelError] = useState<{ alertaId: string; message: string } | null>(null)
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -120,6 +170,26 @@ export function DraftsPage() {
       if (isApiError(error) && error.code === 'CONFLICT') resource.reload()
     } finally {
       setPublishingId(null)
+    }
+  }
+
+  async function onCancel(alertaId: string) {
+    if (cancellingId !== null) return
+    setCancellingId(alertaId)
+    setCancelError(null)
+    try {
+      await api.cancelAlert(alertaId)
+      setCancelled((previous) => new Set(previous).add(alertaId))
+      setConfirmingId(null)
+    } catch (error) {
+      setCancelError({ alertaId, message: cancelErrorMessage(error) })
+      // Un 409 significa que ya estaba cancelada: no tiene sentido seguir ofreciendo cancelar.
+      if (isApiError(error) && error.code === 'CONFLICT') {
+        setCancelled((previous) => new Set(previous).add(alertaId))
+        setConfirmingId(null)
+      }
+    } finally {
+      setCancellingId(null)
     }
   }
 
@@ -255,15 +325,40 @@ export function DraftsPage() {
                   </p>
                   <p className="pre-wrap">{draft.mensaje}</p>
                   {draft.status === 'PUBLISHED' ? (
-                    <p>
-                      <span className="badge ok">Publicada</span>
-                      {draft.alertaId !== null && (
-                        <>
-                          {' '}
-                          <code>{draft.alertaId}</code>
-                        </>
+                    <>
+                      <p>
+                        {draft.alertaId !== null && cancelled.has(draft.alertaId) ? (
+                          <span className="badge bad">Cancelada</span>
+                        ) : (
+                          <span className="badge ok">Publicada</span>
+                        )}
+                        {draft.alertaId !== null && (
+                          <>
+                            {' '}
+                            <code>{draft.alertaId}</code>
+                          </>
+                        )}
+                      </p>
+                      {canCancel && draft.alertaId !== null && !cancelled.has(draft.alertaId) && (
+                        <CancelControls
+                          alertaId={draft.alertaId}
+                          confirming={confirmingId === draft.alertaId}
+                          busy={cancellingId === draft.alertaId}
+                          disabled={cancellingId !== null}
+                          onAsk={() => {
+                            setCancelError(null)
+                            setConfirmingId(draft.alertaId)
+                          }}
+                          onBack={() => setConfirmingId(null)}
+                          onConfirm={() => void onCancel(draft.alertaId as string)}
+                        />
                       )}
-                    </p>
+                      {cancelError?.alertaId === draft.alertaId && (
+                        <p role="alert" className="alert error">
+                          {cancelError.message}
+                        </p>
+                      )}
+                    </>
                   ) : (
                     <>
                       <p>
