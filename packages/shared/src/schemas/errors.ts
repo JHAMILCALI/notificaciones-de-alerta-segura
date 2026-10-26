@@ -11,6 +11,8 @@ export const API_ERROR_CODES = [
   'RATE_LIMITED',
   /** 503: el firmante no responde o no tiene clave; no se publica nada. */
   'SIGNER_UNAVAILABLE',
+  /** 503: no hay manifiesto de confianza cargado (`TRUST_MANIFEST_FILE` vacío o ilegible). */
+  'TRUST_MANIFEST_UNAVAILABLE',
   'INTERNAL_ERROR',
 ] as const;
 export const ApiErrorCodeSchema = z.enum(API_ERROR_CODES);
