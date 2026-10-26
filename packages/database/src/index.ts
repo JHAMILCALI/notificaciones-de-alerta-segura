@@ -18,6 +18,14 @@ export {
   AuditOutcome,
 } from './generated/enums';
 export { ARGON2_OPTIONS, hashPassword, verifyPassword } from './password';
+export {
+  addIssuer,
+  AddIssuerError,
+  ISSUER_PASSWORD_MAX_LENGTH,
+  ISSUER_PASSWORD_MIN_LENGTH,
+  type AddedIssuer,
+  type AddIssuerInput,
+} from './issuers';
 
 export interface CreatePrismaClientOptions {
   connectionString: string;
