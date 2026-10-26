@@ -51,7 +51,7 @@ export class TrustService {
     this.logger.warn(`Manifiesto de confianza no disponible: ${reason}`);
     return new ApiException(
       503,
-      'INTERNAL_ERROR',
+      'TRUST_MANIFEST_UNAVAILABLE',
       'El manifiesto de confianza no está disponible',
     );
   }

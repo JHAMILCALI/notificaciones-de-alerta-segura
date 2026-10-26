@@ -180,14 +180,21 @@ describe('S2-24: GET /trust/manifest', () => {
 
   it('sin archivo → 503 con mensaje genérico (no revela rutas)', async () => {
     const res = await t.browser().get(`${API}/trust/manifest`).expect(503);
-    expect(ApiErrorSchema.parse(res.body).statusCode).toBe(503);
+    expect(ApiErrorSchema.parse(res.body)).toMatchObject({
+      statusCode: 503,
+      code: 'TRUST_MANIFEST_UNAVAILABLE',
+    });
     expect(JSON.stringify(res.body)).not.toContain(dir);
   });
 
   it('sin TRUST_MANIFEST_FILE configurado → 503', async () => {
     const unset = await createTestApp({ trustManifestFile: null });
     try {
-      await unset.browser().get(`${API}/trust/manifest`).expect(503);
+      const res = await unset
+        .browser()
+        .get(`${API}/trust/manifest`)
+        .expect(503);
+      expect(res.body).toMatchObject({ code: 'TRUST_MANIFEST_UNAVAILABLE' });
     } finally {
       await unset.close();
     }
@@ -223,6 +230,7 @@ describe('S2-24: GET /trust/manifest', () => {
     ],
   ])('%s → 503', async (_name, content) => {
     writeFileSync(file, content);
-    await t.browser().get(`${API}/trust/manifest`).expect(503);
+    const res = await t.browser().get(`${API}/trust/manifest`).expect(503);
+    expect(res.body).toMatchObject({ code: 'TRUST_MANIFEST_UNAVAILABLE' });
   });
 });
