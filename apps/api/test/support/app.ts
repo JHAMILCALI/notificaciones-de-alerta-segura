@@ -83,6 +83,7 @@ export function testConfig(overrides: ConfigOverrides = {}): AppConfig {
       loginAccount: generous,
       user: generous,
       global: generous,
+      publish: generous,
       ...overrides.rateLimits,
     },
     signer: { socketPath: '/nonexistent/signer.sock', timeoutMs: 3000 },

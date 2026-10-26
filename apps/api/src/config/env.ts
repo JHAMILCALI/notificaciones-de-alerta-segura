@@ -68,6 +68,9 @@ const EnvSchema = z.object({
   RATE_USER_WINDOW_SECONDS: positiveInt.default(60),
   RATE_GLOBAL_LIMIT: positiveInt.default(300),
   RATE_GLOBAL_WINDOW_SECONDS: positiveInt.default(60),
+  /** Cuota de publicación por emisor: alertas publicadas por ventana (por defecto 10 por hora). */
+  RATE_PUBLISH_LIMIT: positiveInt.default(10),
+  RATE_PUBLISH_WINDOW_SECONDS: positiveInt.default(3600),
 
   /** Socket Unix del firmante (en Windows, una named pipe \.pipealertasegura-signer). */
   SIGNER_SOCKET_PATH: z
@@ -104,6 +107,8 @@ export interface AppConfig {
     loginAccount: RateLimitRule;
     user: RateLimitRule;
     global: RateLimitRule;
+    /** Cuota de publicación por emisor; se cuenta en la base, no en memoria. */
+    publish: RateLimitRule;
   };
   signer: { socketPath: string; timeoutMs: number };
   /** Ruta del manifiesto firmado; null si no está configurado. */
@@ -157,6 +162,10 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
       global: {
         limit: e.RATE_GLOBAL_LIMIT,
         windowSeconds: e.RATE_GLOBAL_WINDOW_SECONDS,
+      },
+      publish: {
+        limit: e.RATE_PUBLISH_LIMIT,
+        windowSeconds: e.RATE_PUBLISH_WINDOW_SECONDS,
       },
     },
     signer: {

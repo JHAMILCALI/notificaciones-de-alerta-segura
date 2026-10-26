@@ -18,6 +18,7 @@ import {
 } from '../../common/decorators/metadata';
 import type { AuthenticatedUser } from '../../common/http/request-context';
 import { AlertsService } from '../alerts/alerts.service';
+import { PublishQuotaGuard } from '../alerts/publish-quota.guard';
 import { AuditService } from '../audit/audit.service';
 import { DraftOwnershipGuard } from './draft-ownership.guard';
 import { DraftsService } from './drafts.service';
@@ -74,13 +75,13 @@ export class DraftsController {
 
   /**
    * Publicación atómica y firmada (api-contract-semana2.md). Los controles anteriores (rate limiting, sesión,
-   * CSRF, validación, RBAC y propiedad) ya se superaron; la firma, la transacción y la auditoría están en
+   * CSRF, validación, RBAC y propiedad) ya se superaron y la cuota se comprueba antes de firmar; la firma, la transacción y la auditoría están en
    * AlertsService.
    */
   @RequirePermissions('alerts:publish')
   @DeniedAction('PUBLICATION_DENIED')
   @Validate({ params: DraftIdParamSchema })
-  @UseGuards(DraftOwnershipGuard)
+  @UseGuards(DraftOwnershipGuard, PublishQuotaGuard)
   @Post(':draftId/publish')
   publish(
     @ValidParams() params: unknown,

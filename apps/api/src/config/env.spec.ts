@@ -23,6 +23,10 @@ describe('loadConfig (validación con Zod, falla rápido)', () => {
     });
     expect(config.rateLimits.user).toEqual({ limit: 120, windowSeconds: 60 });
     expect(config.rateLimits.global).toEqual({ limit: 300, windowSeconds: 60 });
+    expect(config.rateLimits.publish).toEqual({
+      limit: 10,
+      windowSeconds: 3600,
+    });
   });
 
   it('configura el firmante y el manifiesto de confianza', () => {

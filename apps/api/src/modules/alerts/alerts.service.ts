@@ -9,6 +9,7 @@ import {
 } from '@alertasegura/shared';
 import { CLOCK, type Clock } from '../../common/clock/clock';
 import {
+  ApiException,
   conflict,
   forbidden,
   notFound,
@@ -30,6 +31,7 @@ import {
   buildCancelacionRequest,
   buildEstadoRequest,
 } from './documents';
+import { PublishQuotaService } from './publish-quota.service';
 import { SigningService } from './signing.service';
 
 /** Las regeneraciones de estado de un listado se piden al firmante en tandas, no todas a la vez. */
@@ -53,6 +55,7 @@ export class AlertsService {
     private readonly audit: AuditService,
     private readonly signing: SigningService,
     private readonly states: AlertStateService,
+    private readonly quota: PublishQuotaService,
     @Inject(CLOCK) private readonly clock: Clock,
   ) {}
 
@@ -106,6 +109,9 @@ export class AlertsService {
     const doc = AlertaDocumentoSchema.parse(signedAlerta.payload);
     try {
       await this.prisma.$transaction(async (tx) => {
+        // Cuota definitiva: bajo un bloqueo por emisor, así dos publicaciones simultáneas no la rebasan.
+        await this.quota.lockEmisor(tx, doc.emisor_id);
+        await this.quota.enforce(tx, doc.emisor_id, req);
         await tx.alertaPublicada.create({
           data: {
             id: doc.alerta_id,
@@ -159,6 +165,7 @@ export class AlertsService {
         });
       });
     } catch (error) {
+      if (error instanceof ApiException) throw error; // cuota excedida (429): nada que revertir
       // Dos publicaciones simultáneas del mismo borrador: gana una y la otra recibe 409.
       if (error instanceof AlreadyPublishedError || isUniqueViolation(error)) {
         throw conflict('El borrador ya está publicado');
