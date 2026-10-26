@@ -11,7 +11,9 @@ export type {
 export {
   Role,
   UserStatus,
-  Severity,
+  TipoAlerta,
+  Departamento,
+  NivelAlerta,
   DraftStatus,
   AuditOutcome,
 } from './generated/enums';

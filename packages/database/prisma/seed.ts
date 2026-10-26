@@ -3,8 +3,10 @@ import { config } from 'dotenv';
 import {
   createPrismaClient,
   hashPassword,
+  Departamento,
+  NivelAlerta,
   Role,
-  Severity,
+  TipoAlerta,
   type PrismaClient,
 } from '../src/index';
 
@@ -59,14 +61,22 @@ const SEED_USERS: SeedUser[] = [
 
 const FICTIONAL_DRAFTS = [
   {
-    title: 'Simulacro: lluvias intensas en zona norte',
-    body: 'Borrador ficticio de demostracion. Se esperan lluvias intensas durante la tarde; evite cruzar quebradas.',
-    severity: Severity.WARNING,
+    tipo: TipoAlerta.LLUVIAS_INTENSAS,
+    departamento: Departamento.LA_PAZ,
+    municipio: 'La Paz',
+    severidad: NivelAlerta.NARANJA,
+    mensaje:
+      'Simulacro: borrador ficticio de demostracion. Se esperan lluvias intensas durante la tarde; evite cruzar quebradas.',
+    vigenciaHoras: 12,
   },
   {
-    title: 'Simulacro: corte programado de agua',
-    body: 'Borrador ficticio de demostracion. Corte de suministro entre las 08:00 y las 14:00 en el sector centro.',
-    severity: Severity.INFO,
+    tipo: TipoAlerta.HELADA,
+    departamento: Departamento.POTOSI,
+    municipio: null,
+    severidad: NivelAlerta.AMARILLA,
+    mensaje:
+      'Simulacro: borrador ficticio de demostracion. Heladas por la madrugada en el altiplano; proteja cultivos y animales.',
+    vigenciaHoras: 24,
   },
 ];
 
@@ -125,10 +135,10 @@ async function seed(): Promise<void> {
     for (const [i, ownerId] of issuerIds.entries()) {
       const draft = FICTIONAL_DRAFTS[i % FICTIONAL_DRAFTS.length];
       if (!draft) continue;
-      const exists = await prisma.draft.findFirst({ where: { ownerId, title: draft.title } });
+      const exists = await prisma.draft.findFirst({ where: { ownerId, mensaje: draft.mensaje } });
       if (!exists) {
         await prisma.draft.create({ data: { ...draft, ownerId } });
-        console.log(`[seed] borrador ficticio creado: "${draft.title}"`);
+        console.log(`[seed] borrador ficticio creado: ${draft.tipo} en ${draft.departamento}`);
       }
     }
   } finally {

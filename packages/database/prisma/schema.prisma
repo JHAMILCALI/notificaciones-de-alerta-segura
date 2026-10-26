@@ -24,14 +24,45 @@ enum UserStatus {
   DISABLED
 }
 
-enum Severity {
-  INFO
-  WARNING
-  CRITICAL
+/// Catálogo de Bolivia (D-4); la fuente de verdad de los valores es packages/shared/src/constants/bolivia.ts.
+enum TipoAlerta {
+  LLUVIAS_INTENSAS
+  TORMENTA_ELECTRICA
+  GRANIZADA
+  NEVADA
+  HELADA
+  OLA_DE_FRIO
+  OLA_DE_CALOR
+  VIENTOS_FUERTES
+  INUNDACION
+  DESBORDE_DE_RIO
+  MAZAMORRA
+  SEQUIA
+  INCENDIO_FORESTAL
+  RADIACION_UV_EXTREMA
+}
+
+enum Departamento {
+  LA_PAZ
+  ORURO
+  POTOSI
+  COCHABAMBA
+  CHUQUISACA
+  TARIJA
+  SANTA_CRUZ
+  BENI
+  PANDO
+}
+
+enum NivelAlerta {
+  AMARILLA
+  NARANJA
+  ROJA
 }
 
 enum DraftStatus {
   DRAFT
+  PUBLISHED
 }
 
 enum AuditOutcome {
@@ -81,14 +112,21 @@ model Session {
 }
 
 model Draft {
-  id        String      @id @default(uuid()) @db.Uuid
-  title     String
-  body      String
-  severity  Severity
-  status    DraftStatus @default(DRAFT)
-  ownerId   String      @db.Uuid
-  createdAt DateTime    @default(now()) @db.Timestamptz(3)
-  updatedAt DateTime    @updatedAt @db.Timestamptz(3)
+  id            String       @id @default(uuid()) @db.Uuid
+  tipo          TipoAlerta
+  departamento  Departamento
+  /// Municipio o provincia; null si la alerta cubre todo el departamento.
+  municipio     String?
+  severidad     NivelAlerta
+  mensaje       String
+  /// 1 a 72 (CHECK en la migración). Al publicar: expira_en = emitida_en + vigenciaHoras.
+  vigenciaHoras Int
+  status        DraftStatus  @default(DRAFT)
+  /// Alerta publicada a partir de este borrador; null mientras sea DRAFT (la FK llega en la entrega 2).
+  alertaId      String?      @db.Uuid
+  ownerId       String       @db.Uuid
+  createdAt     DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime     @updatedAt @db.Timestamptz(3)
 
   owner User @relation(fields: [ownerId], references: [id], onDelete: Restrict)
 
