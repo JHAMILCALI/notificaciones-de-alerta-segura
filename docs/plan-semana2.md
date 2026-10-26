@@ -61,8 +61,17 @@ Hay que resolverlas **antes** de firmar nada: lo que se firma ya no se puede cam
 - **Cuotas de publicación (T8):** se añade un límite de publicaciones por emisor.
 - **Purga de sesiones caducadas y CSP:** prioridad BAJA; se hacen si sobra tiempo.
 
-> **Decisión pendiente del autor:** si aceptas estas sugerencias, ATLAS las aplica en la fase 0. Si prefieres otra
-> opción para alguna, se cambia aquí antes de empezar.
+> **Decisiones aprobadas por el autor (2026-10-26):** D-4 con la **opción C, adaptada a Bolivia**. El resto, según
+> las sugerencias de esta tabla. Para D-4 eso significa:
+> - **Zona:** uno de los 9 departamentos más un municipio opcional.
+> - **Tipos de alerta:** fenómenos bolivianos, como granizada, helada, surazo, mazamorra, incendio forestal o
+>   radiación UV extrema.
+> - **Niveles:** alerta **amarilla, naranja o roja**.
+> - **Fechas:** se firman en UTC y se muestran en `America/La_Paz` (UTC−4).
+>
+> El detalle está en `packages/shared/src/constants/bolivia.ts` y en
+> [`coordination/api-contract-semana2.md`](coordination/api-contract-semana2.md). Fichas de tarea:
+> [SHIRO](coordination/shiro-semana2.md) · [MOTO](coordination/moto-semana2.md).
 
 ---
 
