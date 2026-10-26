@@ -59,6 +59,8 @@ const EnvSchema = z.object({
 
   SESSION_ABSOLUTE_TTL_MINUTES: positiveInt.default(480),
   SESSION_IDLE_TTL_MINUTES: positiveInt.default(30),
+  /** Cada cuánto se purgan las sesiones caducadas o revocadas (por defecto, cada hora). */
+  SESSION_PURGE_INTERVAL_MINUTES: positiveInt.default(60),
 
   RATE_LOGIN_IP_LIMIT: positiveInt.default(10),
   RATE_LOGIN_IP_WINDOW_SECONDS: positiveInt.default(60),
@@ -101,7 +103,11 @@ export interface AppConfig {
   cookieSecure: boolean;
   trustProxy: false | number;
   bodyLimit: string;
-  session: { absoluteTtlMs: number; idleTtlMs: number };
+  session: {
+    absoluteTtlMs: number;
+    idleTtlMs: number;
+    purgeIntervalMs: number;
+  };
   rateLimits: {
     loginIp: RateLimitRule;
     loginAccount: RateLimitRule;
@@ -145,6 +151,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     session: {
       absoluteTtlMs: e.SESSION_ABSOLUTE_TTL_MINUTES * 60_000,
       idleTtlMs: e.SESSION_IDLE_TTL_MINUTES * 60_000,
+      purgeIntervalMs: e.SESSION_PURGE_INTERVAL_MINUTES * 60_000,
     },
     rateLimits: {
       loginIp: {

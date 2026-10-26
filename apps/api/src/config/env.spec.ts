@@ -15,6 +15,7 @@ describe('loadConfig (validación con Zod, falla rápido)', () => {
     expect(config.session).toEqual({
       absoluteTtlMs: 8 * 3600_000,
       idleTtlMs: 30 * 60_000,
+      purgeIntervalMs: 60 * 60_000,
     });
     expect(config.rateLimits.loginIp).toEqual({ limit: 10, windowSeconds: 60 });
     expect(config.rateLimits.loginAccount).toEqual({

@@ -28,6 +28,8 @@ export const WEB_ORIGIN = 'http://localhost:5173';
 
 export interface ConfigOverrides {
   cookieSecure?: boolean;
+  /** Origen de la PWA (por defecto http://localhost:5173; con TLS de laboratorio, https). */
+  webOrigin?: string;
   trustProxy?: false | number;
   session?: Partial<AppConfig['session']>;
   rateLimits?: Partial<AppConfig['rateLimits']>;
@@ -68,7 +70,7 @@ export function testConfig(overrides: ConfigOverrides = {}): AppConfig {
     nodeEnv: 'test',
     port: 0,
     databaseUrl,
-    webOrigin: WEB_ORIGIN,
+    webOrigin: overrides.webOrigin ?? WEB_ORIGIN,
     csrfSecret: randomBytes(32).toString('hex'),
     cookieSecure: overrides.cookieSecure ?? false,
     trustProxy: overrides.trustProxy ?? false,
@@ -76,6 +78,7 @@ export function testConfig(overrides: ConfigOverrides = {}): AppConfig {
     session: {
       absoluteTtlMs: 8 * 3600_000,
       idleTtlMs: 30 * 60_000,
+      purgeIntervalMs: 3_600_000,
       ...overrides.session,
     },
     rateLimits: {
