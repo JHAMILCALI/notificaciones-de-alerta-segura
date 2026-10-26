@@ -1,20 +1,32 @@
 #!/usr/bin/env node
 /**
  * Aceptación GATE G1 (P01, P02a, P02b, P09) de caja negra contra la API en ejecución.
- * P13 se ejecuta aparte con las pruebas de `packages/verification` (ver run-g1.mjs).
+ * Actualizada a la semana 2: los emisores se dan de alta con el comando de laboratorio (D-1), los
+ * borradores usan los campos de Bolivia (D-4) y el control positivo de P02b publica de verdad (201).
+ * P13 se ejecuta aparte con las pruebas de `packages/verification`.
  *
- * Requisitos: PostgreSQL arriba, migraciones y seed aplicados, API escuchando.
+ * Requisitos: PostgreSQL arriba, migraciones, roles y seed aplicados, API escuchando y firmante disponible.
  * Credenciales: las del seed, leídas de `.env` (nunca se escriben en la evidencia).
  * Uso: node tests/security/g1-acceptance.mjs [--base http://localhost:3000/api/v1]
  */
 import { randomBytes } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import {
+  Client,
+  Evidence,
+  assertHealthy,
+  boliviaDraft,
+  env,
+  provisionIssuer,
+  requireEnv,
+  root,
+  sleep,
+  strongPassword,
+  uniq,
+} from './lib/harness.mjs';
 import { G1_DRAFT } from './test-data.mjs';
 
-const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const env = { ...loadEnv(join(root, '.env')), ...process.env };
 const argBase = process.argv.indexOf('--base');
 const BASE = argBase > 0 ? process.argv[argBase + 1] : (env.G1_API_BASE ?? 'http://localhost:3000/api/v1');
 const LOGIN_ACCOUNT_LIMIT = Number(env.RATE_LOGIN_ACCOUNT_LIMIT ?? 5);
@@ -23,141 +35,12 @@ const LOGIN_IP_TTL_S = Number(env.RATE_LOGIN_IP_WINDOW_SECONDS ?? 60);
 const USER_LIMIT = Number(env.RATE_USER_LIMIT ?? 120);
 const evidenceDir = join(root, 'docs', 'evidence', 'g1');
 
-function loadEnv(path) {
-  try {
-    return Object.fromEntries(
-      readFileSync(path, 'utf8')
-        .split(/\r?\n/)
-        .filter((l) => /^[A-Z0-9_]+=/.test(l))
-        .map((l) => {
-          const i = l.indexOf('=');
-          return [l.slice(0, i), l.slice(i + 1).replace(/^"(.*)"$/, '$1')];
-        }),
-    );
-  } catch {
-    return {};
-  }
-}
-
-/** Cliente HTTP con su propio tarro de cookies, como un navegador independiente. */
-class Client {
-  constructor(name) {
-    this.name = name;
-    this.cookies = new Map();
-    this.csrf = null;
-  }
-
-  async request(method, path, { body, csrf = true, headers = {} } = {}) {
-    const h = { accept: 'application/json', ...headers };
-    if (body !== undefined) h['content-type'] = 'application/json';
-    // Un token pasado explícitamente en `headers` (p. ej. el de otra sesión) no se sobrescribe.
-    if (csrf && this.csrf && !['GET', 'HEAD'].includes(method) && !('x-csrf-token' in headers)) {
-      h['x-csrf-token'] = this.csrf;
-    }
-    if (this.cookies.size) h.cookie = [...this.cookies].map(([k, v]) => `${k}=${v}`).join('; ');
-    const res = await fetch(BASE + path, {
-      method,
-      headers: h,
-      body: body === undefined ? undefined : JSON.stringify(body),
-    });
-    const setCookie = res.headers.getSetCookie();
-    for (const c of setCookie) {
-      const [pair] = c.split(';');
-      const i = pair.indexOf('=');
-      const name = pair.slice(0, i).trim();
-      const value = pair.slice(i + 1).trim();
-      if (value === '' || /max-age=0|expires=thu, 01 jan 1970/i.test(c)) this.cookies.delete(name);
-      else this.cookies.set(name, value);
-    }
-    const text = await res.text();
-    let json = null;
-    try {
-      json = text ? JSON.parse(text) : null;
-    } catch {
-      json = { raw: text.slice(0, 200) };
-    }
-    return {
-      status: res.status,
-      json,
-      retryAfter: res.headers.get('retry-after'),
-      setCookie: setCookie.map(redactCookie),
-    };
-  }
-
-  async fetchCsrf() {
-    const r = await this.request('GET', '/auth/csrf');
-    this.csrf = r.json?.csrfToken ?? null;
-    return r;
-  }
-
-  async login(email, password) {
-    if (!this.csrf) await this.fetchCsrf();
-    const r = await this.request('POST', '/auth/login', { body: { email, password } });
-    if (r.status === 200) this.csrf = r.json.csrfToken;
-    return r;
-  }
-}
-
-function redactCookie(c) {
-  return c.replace(/^([^=]+)=([^;]*)/, (_, n, v) => `${n}=<${v.length} caracteres omitidos>`);
-}
-
-/** Registro de pasos con resultado esperado y observado para la evidencia. */
-class Evidence {
-  constructor(id, title, preparation) {
-    Object.assign(this, { id, title, preparation, steps: [], startedAt: new Date().toISOString() });
-  }
-
-  check(step, expected, observed, ok, detail) {
-    this.steps.push({ step, expected, observed, result: ok ? 'OK' : 'FALLO', ...(detail ? { detail } : {}) });
-    console.log(`  ${ok ? '✔' : '✘'} [${this.id}] ${step} — esperado: ${expected}; observado: ${observed}`);
-    return ok;
-  }
-
-  expectStatus(step, res, status, code) {
-    const ok = res.status === status && (code === undefined || res.json?.code === code);
-    return this.check(
-      step,
-      code ? `${status} ${code}` : String(status),
-      `${res.status}${res.json?.code ? ' ' + res.json.code : ''}`,
-      ok,
-      { response: res.json, ...(res.retryAfter ? { retryAfter: res.retryAfter } : {}) },
-    );
-  }
-
-  get approved() {
-    return this.steps.length > 0 && this.steps.every((s) => s.result === 'OK');
-  }
-
-  toJSON() {
-    return {
-      id: this.id,
-      title: this.title,
-      base: BASE,
-      startedAt: this.startedAt,
-      finishedAt: new Date().toISOString(),
-      preparation: this.preparation,
-      steps: this.steps,
-      status: this.approved ? 'APROBADO' : 'NO APROBADO',
-    };
-  }
-}
-
-const uniq = () => randomBytes(4).toString('hex');
-const strongPassword = () => randomBytes(18).toString('base64url');
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-
-function requireEnv(name) {
-  const v = env[name];
-  if (!v) throw new Error(`Falta ${name} en .env (credenciales del seed)`);
-  return v;
-}
+const client = (name) => new Client(name, BASE);
+const evidence = (id, title, prep) => new Evidence(id, title, prep, BASE);
 
 async function main() {
   mkdirSync(evidenceDir, { recursive: true });
-  const health = await fetch(BASE + '/health').then((r) => r.json()).catch((e) => ({ error: String(e) }));
-  console.log(`API ${BASE} → health ${JSON.stringify(health)}`);
-  if (health.status !== 'ok') throw new Error('La API no está sana; abortando sin marcar ninguna prueba.');
+  await assertHealthy(BASE);
 
   const adminEmail = requireEnv('SEED_ADMIN_EMAIL');
   const adminPassword = requireEnv('SEED_ADMIN_PASSWORD');
@@ -166,11 +49,11 @@ async function main() {
   const results = [];
 
   // ---------- P01 ----------
-  const p01 = new Evidence('P01', 'Login seguro, sesiones y roles', {
-    users: ['ADMIN del seed', 'AUDITOR del seed', `emisor provisionado por ADMIN con contraseña aleatoria`],
+  const p01 = evidence('P01', 'Login seguro, sesiones y roles', {
+    users: ['ADMIN del seed', 'AUDITOR del seed', 'emisores A y B dados de alta con `pnpm lab issuer:add` (D-1)'],
     note: 'Las contraseñas no se registran; las cookies aparecen truncadas.',
   });
-  const admin = new Client('admin');
+  const admin = client('admin');
   let r = await admin.fetchCsrf();
   p01.expectStatus('GET /auth/csrf entrega token', r, 200);
   r = await admin.login(adminEmail, 'contraseña-incorrecta-' + uniq());
@@ -188,59 +71,65 @@ async function main() {
   );
   p01.check('La respuesta no expone passwordHash', 'sin passwordHash', JSON.stringify(r.json).includes('passwordHash') ? 'presente' : 'ausente', !JSON.stringify(r.json).includes('passwordHash'));
   r = await admin.request('GET', '/auth/me');
-  p01.check('GET /auth/me devuelve rol ADMIN y sus permisos', '200 ADMIN [users:read, issuers:provision, audit:read]', `${r.status} ${r.json?.user?.role} [${r.json?.user?.permissions}]`, r.status === 200 && r.json.user.role === 'ADMIN' && ['users:read', 'issuers:provision', 'audit:read'].every((p) => r.json.user.permissions.includes(p)) && !r.json.user.permissions.includes('alerts:publish'));
+  const adminPerms = r.json?.user?.permissions ?? [];
+  p01.check(
+    'GET /auth/me: ADMIN con users:read y audit:read, sin publicar ni dar de alta emisores',
+    '200 ADMIN [users:read, audit:read]',
+    `${r.status} ${r.json?.user?.role} [${adminPerms}]`,
+    r.status === 200 && r.json.user.role === 'ADMIN' && ['users:read', 'audit:read'].every((p) => adminPerms.includes(p)) &&
+      !adminPerms.some((p) => ['alerts:publish', 'alerts:cancel', 'issuers:provision'].includes(p)),
+  );
+  r = await admin.request('POST', '/admin/issuers', { body: { email: `x-${uniq()}@example.test`, displayName: 'Vía API', password: strongPassword() } });
+  p01.expectStatus('D-1: el ADMIN ya no da de alta emisores por la API (endpoint retirado)', r, 404);
 
   const issuerA = { email: `emisor-a-${uniq()}@example.test`, password: strongPassword() };
   const issuerB = { email: `emisor-b-${uniq()}@example.test`, password: strongPassword() };
   for (const [label, u] of [['A', issuerA], ['B', issuerB]]) {
-    r = await admin.request('POST', '/admin/issuers', { body: { email: u.email, displayName: `Emisor ${label} G1`, password: u.password } });
-    p01.check(`ADMIN provisiona emisor ${label}`, '201 role ISSUER', `${r.status} ${r.json?.user?.role}`, r.status === 201 && r.json.user.role === 'ISSUER');
-    u.id = r.json?.user?.id;
+    const out = provisionIssuer({ email: u.email, name: `Emisor ${label} G1`, password: u.password });
+    p01.check(`Laboratorio da de alta al emisor ${label} (pnpm lab issuer:add)`, 'emisor creado', out.output, out.ok);
+    u.id = out.id;
   }
-  r = await admin.request('POST', '/admin/issuers', { body: { email: `x-${uniq()}@example.test`, displayName: 'Con rol', password: strongPassword(), role: 'ADMIN' } });
-  p01.expectStatus('Provisión con campo extra "role" se rechaza (mass assignment)', r, 400, 'VALIDATION_FAILED');
 
-  const auditor = new Client('auditor');
+  const auditor = client('auditor');
   r = await auditor.login(auditorEmail, auditorPassword);
   p01.expectStatus('Login AUDITOR correcto', r, 200);
-  r = await auditor.request('POST', '/admin/issuers', { body: { email: `y-${uniq()}@example.test`, displayName: 'Intruso', password: strongPassword() } });
-  p01.expectStatus('AUDITOR no puede provisionar emisores', r, 403, 'FORBIDDEN');
   r = await auditor.request('GET', '/audit?limit=5');
   p01.check('AUDITOR lee la auditoría', '200 con entradas', `${r.status} ${r.json?.entries?.length ?? 0} entradas`, r.status === 200 && r.json.entries.length > 0);
-  r = await auditor.request('GET', '/audit?limit=50');
-  const provisioned = (r.json?.entries ?? []).filter((e) => e.action === 'ISSUER_PROVISIONED').map((e) => e.targetId);
+  r = await auditor.request('GET', '/audit?limit=100');
+  const provisioned = (r.json?.entries ?? []).filter((e) => e.action === 'ISSUER_PROVISIONED');
+  const byLab = (id) => provisioned.some((e) => e.targetId === id && e.metadata?.actor === 'lab-script');
   p01.check(
-    'Alta de emisores auditada (ISSUER_PROVISIONED de A y B)',
+    'Alta de emisores auditada (ISSUER_PROVISIONED con actor lab-script)',
     'ambos emisores registrados',
-    [issuerA, issuerB].map((u) => (provisioned.includes(u.id) ? 'registrado' : 'ausente')).join(', '),
-    provisioned.includes(issuerA.id) && provisioned.includes(issuerB.id),
+    [issuerA, issuerB].map((u) => (byLab(u.id) ? 'registrado' : 'ausente')).join(', '),
+    byLab(issuerA.id) && byLab(issuerB.id),
   );
 
-  const a = new Client('emisorA');
+  const a = client('emisorA');
   r = await a.login(issuerA.email, issuerA.password);
   p01.expectStatus('Login emisor A correcto', r, 200);
   r = await a.request('GET', '/auth/me');
-  p01.check('Emisor A tiene rol ISSUER con alerts:publish', '200 ISSUER', `${r.status} ${r.json?.user?.role}`, r.status === 200 && r.json.user.role === 'ISSUER' && r.json.user.permissions.includes('alerts:publish'));
+  p01.check('Emisor A tiene rol ISSUER con alerts:publish y alerts:cancel', '200 ISSUER', `${r.status} ${r.json?.user?.role} [${r.json?.user?.permissions}]`, r.status === 200 && r.json.user.role === 'ISSUER' && ['alerts:publish', 'alerts:cancel'].every((p) => r.json.user.permissions.includes(p)));
 
-  const stolen = new Client('cookie-copiada');
+  const stolen = client('cookie-copiada');
   stolen.cookies = new Map(admin.cookies);
   r = await admin.request('POST', '/auth/logout');
   p01.expectStatus('Logout ADMIN', r, 204);
   r = await stolen.request('GET', '/auth/me');
   p01.expectStatus('La cookie anterior al logout ya no vale', r, 401, 'UNAUTHENTICATED');
-  r = await new Client('falsa').request('GET', '/auth/me', { headers: { cookie: `as_session=${randomBytes(32).toString('base64url')}` } });
+  r = await client('falsa').request('GET', '/auth/me', { headers: { cookie: `as_session=${randomBytes(32).toString('base64url')}` } });
   p01.expectStatus('Token de sesión inventado se rechaza', r, 401, 'UNAUTHENTICATED');
   results.push(p01);
 
   // ---------- P02a ----------
-  r = await a.request('POST', '/drafts', { body: { title: G1_DRAFT.title(uniq()), body: G1_DRAFT.body, severity: 'WARNING' } });
+  r = await a.request('POST', '/drafts', { body: boliviaDraft(G1_DRAFT.mensaje(uniq())) });
   const draftOk = r.status === 201;
   const draftId = r.json?.draft?.id;
-  const p02a = new Evidence('P02a', 'Usuario anónimo intenta publicar → 401', {
+  const p02a = evidence('P02a', 'Usuario anónimo intenta publicar → 401', {
     draft: `borrador ${draftId} creado por el emisor A`,
   });
-  p02a.check('Preparación: emisor A crea un borrador', '201', String(r.status), draftOk);
-  const anon = new Client('anonimo');
+  p02a.check('Preparación: emisor A crea un borrador (campos de Bolivia)', '201', String(r.status), draftOk);
+  const anon = client('anonimo');
   r = await anon.request('POST', `/drafts/${draftId}/publish`);
   p02a.expectStatus('Anónimo sin token CSRF publica', r, 401, 'UNAUTHENTICATED');
   await anon.fetchCsrf();
@@ -251,17 +140,17 @@ async function main() {
   results.push(p02a);
 
   // ---------- P02b ----------
-  const p02b = new Evidence('P02b', 'Usuario autenticado sin permisos intenta publicar → 403', {
+  const p02b = evidence('P02b', 'Usuario autenticado sin permisos intenta publicar → 403', {
     draft: `borrador ${draftId} del emisor A`,
     actors: ['AUDITOR (sin alerts:publish)', 'ADMIN (sin alerts:publish)', 'emisor B (no propietario)', 'emisor A (propietario)'],
   });
   r = await auditor.request('POST', `/drafts/${draftId}/publish`);
   p02b.expectStatus('AUDITOR publica', r, 403, 'FORBIDDEN');
-  const admin2 = new Client('admin2');
+  const admin2 = client('admin2');
   await admin2.login(adminEmail, adminPassword);
   r = await admin2.request('POST', `/drafts/${draftId}/publish`);
   p02b.expectStatus('ADMIN publica (separación de funciones)', r, 403, 'FORBIDDEN');
-  const b = new Client('emisorB');
+  const b = client('emisorB');
   r = await b.login(issuerB.email, issuerB.password);
   p02b.expectStatus('Preparación: login emisor B', r, 200);
   r = await b.request('POST', `/drafts/${draftId}/publish`);
@@ -275,14 +164,14 @@ async function main() {
   r = await a.request('POST', `/drafts/${draftId}/publish`, { headers: { origin: 'https://atacante.example' } });
   p02b.expectStatus('Emisor A publica con Origin ajeno', r, 403, 'CSRF_INVALID');
   r = await a.request('POST', `/drafts/${draftId}/publish`);
-  p02b.expectStatus('Control positivo: propietario autorizado (firma pendiente S2)', r, 501, 'PUBLICATION_NOT_IMPLEMENTED');
-  r = await auditor.request('GET', '/audit?limit=50');
+  p02b.check('Control positivo: el propietario publica (alerta firmada, semana 2)', '201 con alerta', `${r.status} ${r.json?.alerta?.id ?? r.json?.code ?? ''}`, r.status === 201 && Boolean(r.json?.alerta?.alerta?.firma), { alertaId: r.json?.alerta?.id });
+  r = await auditor.request('GET', '/audit?limit=100');
   const actions = new Set((r.json?.entries ?? []).map((e) => e.action));
-  p02b.check('Auditoría registra PUBLICATION_DENIED y PUBLICATION_AUTHORIZED', 'ambas acciones', [...actions].filter((x) => x.startsWith('PUBLICATION')).join(', ') || 'ninguna', actions.has('PUBLICATION_DENIED') && actions.has('PUBLICATION_AUTHORIZED'));
+  p02b.check('Auditoría registra PUBLICATION_DENIED y ALERT_PUBLISHED', 'ambas acciones', [...actions].filter((x) => /PUBLICATION|PUBLISHED/.test(x)).join(', ') || 'ninguna', actions.has('PUBLICATION_DENIED') && actions.has('ALERT_PUBLISHED'));
   results.push(p02b);
 
   // ---------- P09 ----------
-  const p09 = new Evidence('P09', 'Solicitudes excesivas → 429', {
+  const p09 = evidence('P09', 'Solicitudes excesivas → 429', {
     limits: { loginPorCuenta: LOGIN_ACCOUNT_LIMIT, loginPorIp: `${LOGIN_IP_LIMIT}/${LOGIN_IP_TTL_S}s`, usuarioAutenticado: USER_LIMIT },
     note: `Se espera ${LOGIN_IP_TTL_S + 1}s para empezar con la ventana de login por IP vacía.`,
   });
@@ -290,7 +179,7 @@ async function main() {
   await sleep((LOGIN_IP_TTL_S + 1) * 1000);
 
   const victim = `objetivo-${uniq()}@example.test`;
-  const attacker = new Client('fuerza-bruta');
+  const attacker = client('fuerza-bruta');
   await attacker.fetchCsrf();
   const statuses = [];
   for (let i = 1; i <= LOGIN_ACCOUNT_LIMIT + 1; i++) {
