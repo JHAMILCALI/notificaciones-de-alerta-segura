@@ -1,12 +1,11 @@
 import { Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import type { Request } from 'express';
-import type { z } from 'zod';
 import {
   CreateDraftRequestSchema,
   DraftIdParamSchema,
-  DraftListResponseSchema,
-  DraftResponseSchema,
   type CreateDraftRequest,
+  type DraftListResponse,
+  type DraftResponse,
 } from '@alertasegura/shared';
 import {
   CurrentUser,
@@ -21,10 +20,6 @@ import type { AuthenticatedUser } from '../../common/http/request-context';
 import { AuditService } from '../audit/audit.service';
 import { DraftOwnershipGuard } from './draft-ownership.guard';
 import { DraftsService } from './drafts.service';
-
-// shared exporta los esquemas pero no estos dos tipos (cambio de contrato menor solicitado).
-type DraftResponse = z.infer<typeof DraftResponseSchema>;
-type DraftListResponse = z.infer<typeof DraftListResponseSchema>;
 
 @Controller('drafts')
 export class DraftsController {
@@ -49,7 +44,11 @@ export class DraftsController {
       targetType: 'draft',
       targetId: draft.id,
       req,
-      metadata: { severity: draft.severity },
+      metadata: {
+        tipo: draft.tipo,
+        departamento: draft.zona.departamento,
+        severidad: draft.severidad,
+      },
     });
     return { draft };
   }
@@ -72,37 +71,20 @@ export class DraftsController {
   }
 
   /**
-   * Semana 1: superados rate limiting, sesión, CSRF, validación, RBAC y propiedad, se deja
-   * constancia de la autorización y se responde 501. La firma aislada es de la semana 2;
-   * no se simula nada.
+   * Transitorio (entrega 1 de la semana 2): superados rate limiting, sesión, CSRF, validación,
+   * RBAC y propiedad, todavía no hay firmante conectado; no se publica ni se simula nada.
+   * La entrega 3 lo reemplaza por la publicación atómica con firma.
    */
   @RequirePermissions('alerts:publish')
   @DeniedAction('PUBLICATION_DENIED')
   @Validate({ params: DraftIdParamSchema })
   @UseGuards(DraftOwnershipGuard)
   @Post(':draftId/publish')
-  async publish(
-    @ValidParams() params: unknown,
-    @CurrentUser() user: AuthenticatedUser,
-    @Req() req: Request,
-  ): Promise<never> {
-    const { draftId } = params as { draftId: string };
-    await this.audit.record({
-      action: 'PUBLICATION_AUTHORIZED',
-      outcome: 'SUCCESS',
-      actorId: user.id,
-      targetType: 'draft',
-      targetId: draftId,
-      req,
-      metadata: {
-        signed: false,
-        note: 'publicación firmada pendiente (semana 2)',
-      },
-    });
+  publish(): never {
     throw new ApiException(
       501,
-      'PUBLICATION_NOT_IMPLEMENTED',
-      'La publicación firmada aún no está implementada',
+      'SIGNER_UNAVAILABLE',
+      'La publicación firmada aún no está conectada al firmante',
     );
   }
 }

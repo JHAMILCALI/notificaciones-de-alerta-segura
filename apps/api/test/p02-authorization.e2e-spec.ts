@@ -9,6 +9,7 @@ import {
   API,
   WEB_ORIGIN,
   auditRows,
+  createDraftRow,
   createTestApp,
   createUser,
   fetchCsrf,
@@ -25,14 +26,7 @@ describe('P02a: un anónimo no puede publicar (401)', () => {
   beforeAll(async () => {
     t = await createTestApp();
     owner = await createUser(t.prisma, Role.ISSUER);
-    const draft = await t.prisma.draft.create({
-      data: {
-        title: 'Borrador de prueba',
-        body: 'Cuerpo del borrador de prueba',
-        severity: 'INFO',
-        ownerId: owner.id,
-      },
-    });
+    const draft = await createDraftRow(t.prisma, owner.id);
     draftId = draft.id;
   });
   afterAll(async () => {
@@ -82,7 +76,8 @@ describe('P02a: un anónimo no puede publicar (401)', () => {
     await agent.get(`${API}/admin/users`).expect(401);
     await agent.get(`${API}/audit`).expect(401);
     await agent.post(`${API}/drafts`).send({}).expect(401);
-    await agent.post(`${API}/admin/issuers`).send({}).expect(401);
+    // D-1: el alta de emisores por HTTP ya no existe (la ruta es 404 incluso para un anónimo).
+    await agent.post(`${API}/admin/issuers`).send({}).expect(404);
   });
 
   it('audita el acceso denegado sin actor', async () => {
@@ -114,13 +109,8 @@ describe('P02b: usuarios autenticados sin derecho no publican', () => {
     otherIssuer = await createUser(t.prisma, Role.ISSUER);
     auditor = await createUser(t.prisma, Role.AUDITOR);
     admin = await createUser(t.prisma, Role.ADMIN);
-    const draft = await t.prisma.draft.create({
-      data: {
-        title: 'Borrador del propietario',
-        body: 'Cuerpo del borrador del propietario',
-        severity: 'WARNING',
-        ownerId: owner.id,
-      },
+    const draft = await createDraftRow(t.prisma, owner.id, {
+      severidad: 'ROJA',
     });
     draftId = draft.id;
   });
@@ -180,28 +170,26 @@ describe('P02b: usuarios autenticados sin derecho no publican', () => {
     expect(rows[0]?.metadata).toMatchObject({ reason: 'not_owner' });
   });
 
-  it('ISSUER propietario con CSRF → 501 PUBLICATION_NOT_IMPLEMENTED y PUBLICATION_AUTHORIZED', async () => {
+  it('ISSUER propietario con CSRF → 501 SIGNER_UNAVAILABLE: no se publica ni se simula nada (transitorio hasta la entrega 3)', async () => {
     const { agent, csrfToken } = await loggedInBrowser(t, owner);
     const res = await publish(agent, csrfToken).expect(501);
     expect(ApiErrorSchema.parse(res.body)).toMatchObject({
       statusCode: 501,
-      code: 'PUBLICATION_NOT_IMPLEMENTED',
+      code: 'SIGNER_UNAVAILABLE',
     });
-    const rows = await auditRows(t.prisma, {
-      actorId: owner.id,
-      action: 'PUBLICATION_AUTHORIZED',
-    });
-    expect(rows).toHaveLength(1);
-    expect(rows[0]).toMatchObject({
-      outcome: 'SUCCESS',
-      targetType: 'draft',
-      targetId: draftId,
-    });
-    // No se simula nada: el borrador sigue siendo un borrador, sin alerta publicada.
+    // PUBLICATION_AUTHORIZED dejó de emitirse en la semana 2.
+    expect(
+      await auditRows(t.prisma, {
+        actorId: owner.id,
+        action: 'PUBLICATION_AUTHORIZED',
+      }),
+    ).toHaveLength(0);
+    // El borrador sigue siendo un borrador, sin alerta publicada.
     const draft = await t.prisma.draft.findUniqueOrThrow({
       where: { id: draftId },
     });
     expect(draft.status).toBe('DRAFT');
+    expect(draft.alertaId).toBeNull();
   });
 
   it('sin CSRF → 403 CSRF_INVALID, incluso para el propietario (el CSRF va antes que el RBAC)', async () => {
@@ -243,7 +231,7 @@ describe('P02b: usuarios autenticados sin derecho no publican', () => {
     const ok = await publish(agent, csrfToken)
       .set('Origin', WEB_ORIGIN)
       .expect(501);
-    expect(ok.body).toMatchObject({ code: 'PUBLICATION_NOT_IMPLEMENTED' });
+    expect(ok.body).toMatchObject({ code: 'SIGNER_UNAVAILABLE' });
   });
 
   it('la cabecera CSRF sin la cookie correspondiente no basta (double-submit)', async () => {

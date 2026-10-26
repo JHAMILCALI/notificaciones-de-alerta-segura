@@ -164,3 +164,34 @@ export function auditRows(
 ) {
   return prisma.auditLog.findMany({ where, orderBy: { occurredAt: 'asc' } });
 }
+
+/** Cuerpo válido de POST /drafts (D-4: campos oficiales de Bolivia). */
+export const validDraftBody = {
+  tipo: 'LLUVIAS_INTENSAS',
+  zona: { departamento: 'LA_PAZ', municipio: 'Palca' },
+  severidad: 'ROJA',
+  mensaje: 'Lluvias intensas en la cuenca; evite cruzar quebradas y ríos.',
+  vigenciaHoras: 12,
+} as const;
+
+/** Inserta un borrador directamente en la base (sin pasar por la API). */
+export function createDraftRow(
+  prisma: PrismaClient,
+  ownerId: string,
+  overrides: Partial<{
+    mensaje: string;
+    severidad: 'AMARILLA' | 'NARANJA' | 'ROJA';
+  }> = {},
+) {
+  return prisma.draft.create({
+    data: {
+      tipo: 'LLUVIAS_INTENSAS',
+      departamento: 'LA_PAZ',
+      municipio: null,
+      severidad: overrides.severidad ?? 'NARANJA',
+      mensaje: overrides.mensaje ?? 'Borrador de prueba con texto suficiente.',
+      vigenciaHoras: 24,
+      ownerId,
+    },
+  });
+}
