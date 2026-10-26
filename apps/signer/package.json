@@ -4,15 +4,20 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "tsx watch src/main.ts",
-    "build": "tsc -p tsconfig.json",
-    "start": "node dist/main.js"
+    "dev": "node --watch src/main.ts",
+    "build": "tsc -p tsconfig.json && esbuild src/main.ts --bundle --platform=node --format=esm --target=node24 --outfile=dist/main.js",
+    "start": "node dist/main.js",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
   },
   "dependencies": {
-    "@alertasegura/shared": "workspace:*"
+    "@alertasegura/shared": "workspace:*",
+    "@alertasegura/verification": "workspace:*"
   },
   "devDependencies": {
-    "tsx": "^4.20.0",
-    "typescript": "~6.0.2"
+    "@types/node": "^26.6.5",
+    "esbuild": "^0.28.2",
+    "typescript": "~6.0.2",
+    "vitest": "^5.0.5"
   }
 }
