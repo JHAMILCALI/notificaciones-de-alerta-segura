@@ -1,0 +1,65 @@
+{
+  "id": "P03",
+  "title": "Alterar mensaje, fecha o severidad del JSON → firma no válida",
+  "base": "http://localhost:3000/api/v1",
+  "startedAt": "2026-10-26T23:32:47.014Z",
+  "finishedAt": "2026-10-26T23:33:02.866Z",
+  "preparation": {
+    "manifestVersion": 1,
+    "keyIdActivo": "llVcSpHkfKfuUn1u84xuiuas6VPUPn2dIrU9KTob75c",
+    "rootKeyId": "spGtZx5pWxQCw3jlHWaV-2iRbhUzbcyjSk00aUQzDuk",
+    "alertaId": "ce32a599-97c4-494d-8900-1d4ab73675cd",
+    "note": "Se modifica el documento servido por la API, se re-canonicaliza y se conserva la firma original."
+  },
+  "steps": [
+    {
+      "step": "Control: la alerta original verifica con la clave del manifiesto",
+      "expected": "válida",
+      "observed": "válida (GRANIZADA, LA_PAZ, NARANJA)",
+      "result": "OK"
+    },
+    {
+      "step": "mensaje alterado (hash recalculado)",
+      "expected": "SIGNATURE_INVALID",
+      "observed": "SIGNATURE_INVALID",
+      "result": "OK"
+    },
+    {
+      "step": "expira_en adelantada 3 días (hash recalculado)",
+      "expected": "SIGNATURE_INVALID",
+      "observed": "SIGNATURE_INVALID",
+      "result": "OK"
+    },
+    {
+      "step": "severidad NARANJA → ROJA (hash recalculado)",
+      "expected": "SIGNATURE_INVALID",
+      "observed": "SIGNATURE_INVALID",
+      "result": "OK"
+    },
+    {
+      "step": "departamento cambiado (hash recalculado)",
+      "expected": "SIGNATURE_INVALID",
+      "observed": "SIGNATURE_INVALID",
+      "result": "OK"
+    },
+    {
+      "step": "mensaje alterado conservando hash_payload",
+      "expected": "HASH_MISMATCH",
+      "observed": "HASH_MISMATCH",
+      "result": "OK"
+    },
+    {
+      "step": "La copia `resumen` no interviene: el mensaje verificado sale de los bytes firmados",
+      "expected": "mensaje verificado = resumen.mensaje",
+      "observed": "coinciden",
+      "result": "OK"
+    },
+    {
+      "step": "PostgreSQL guarda exactamente los bytes firmados (bytea) y su SHA-256",
+      "expected": "bytes iguales y hash coherente",
+      "observed": "bytes iguales; hash columna=calculado: true",
+      "result": "OK"
+    }
+  ],
+  "status": "APROBADO"
+}

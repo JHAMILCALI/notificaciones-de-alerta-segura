@@ -1,0 +1,65 @@
+API http://localhost:3000/api/v1 → health {"status":"ok","database":"up"}
+Manifiesto v1 verificado con la raíz; clave activa llVcSpHkfKfuUn1u84xuiuas6VPUPn2dIrU9KTob75c
+  ✔ [P02c] Preparación: emisor A publica una alerta — esperado: 201; observado: 201
+  ✔ [P02c] Emisor B cancela la alerta de A — esperado: 403 FORBIDDEN; observado: 403 FORBIDDEN
+  ✔ [P02c] ADMIN cancela (no tiene alerts:cancel) — esperado: 403 FORBIDDEN; observado: 403 FORBIDDEN
+  ✔ [P02c] Anónimo cancela — esperado: 401 UNAUTHENTICATED; observado: 401 UNAUTHENTICATED
+  ✔ [P02c] Auditoría registra CANCEL_DENIED del emisor B — esperado: presente; observado: presente (1)
+  ✔ [P02c] La alerta sigue VIGENTE y sin eventos (estado firmado verificado) — esperado: VIGENTE, 0 eventos; observado: VIGENTE, 0 eventos
+  ✔ [P03] Control: la alerta original verifica con la clave del manifiesto — esperado: válida; observado: válida (GRANIZADA, LA_PAZ, NARANJA)
+  ✔ [P03] mensaje alterado (hash recalculado) — esperado: SIGNATURE_INVALID; observado: SIGNATURE_INVALID
+  ✔ [P03] expira_en adelantada 3 días (hash recalculado) — esperado: SIGNATURE_INVALID; observado: SIGNATURE_INVALID
+  ✔ [P03] severidad NARANJA → ROJA (hash recalculado) — esperado: SIGNATURE_INVALID; observado: SIGNATURE_INVALID
+  ✔ [P03] departamento cambiado (hash recalculado) — esperado: SIGNATURE_INVALID; observado: SIGNATURE_INVALID
+  ✔ [P03] mensaje alterado conservando hash_payload — esperado: HASH_MISMATCH; observado: HASH_MISMATCH
+  ✔ [P03] La copia `resumen` no interviene: el mensaje verificado sale de los bytes firmados — esperado: mensaje verificado = resumen.mensaje; observado: coinciden
+  ✔ [P03] PostgreSQL guarda exactamente los bytes firmados (bytea) y su SHA-256 — esperado: bytes iguales y hash coherente; observado: bytes iguales; hash columna=calculado: true
+  ✔ [P06] El dueño cancela su alerta — esperado: 201; observado: 201
+  ✔ [P06] El EVENTO verifica y su hash_alerta es el SHA-256 de los bytes de la alerta — esperado: válido; observado: válido (hash_alerta=5a4539c20683…)
+  ✔ [P06] ESTADO firmado: CANCELADA, secuencia 1, encadena el hash del evento, frescura ≤ 600 s — esperado: CANCELADA/1/hash/≤600; observado: CANCELADA/1/hash/600
+  ✔ [P06] Cancelar dos veces — esperado: 409 CONFLICT; observado: 409 CONFLICT
+  ✔ [P06] Historial visible en la consulta pública — esperado: 1 evento; observado: 1 evento(s)
+  ✔ [P06] Evento legítimo de OTRA alerta presentado para esta — esperado: CANCELACION_ALERTA_MISMATCH; observado: CANCELACION_ALERTA_MISMATCH
+  ✔ [P06] Evento con hash_alerta alterado — esperado: SIGNATURE_INVALID; observado: SIGNATURE_INVALID
+  ✔ [P06] Evento bien formado firmado con una clave ajena al manifiesto — esperado: KEY_ID_MISMATCH; observado: KEY_ID_MISMATCH
+  ✔ [P06] El mismo evento ajeno haciéndose pasar por la clave activa — esperado: rechazo; observado: SIGNATURE_INVALID
+  ✔ [P16] EVENTO real presentado como ALERTA — esperado: TIPO_DOC_MISMATCH; observado: TIPO_DOC_MISMATCH
+  ✔ [P16] ALERTA real presentada como EVENTO — esperado: TIPO_DOC_MISMATCH; observado: TIPO_DOC_MISMATCH
+  ✔ [P16] ESTADO real presentado como EVENTO — esperado: TIPO_DOC_MISMATCH; observado: TIPO_DOC_MISMATCH
+  ✔ [P16] Bytes de la ALERTA con la firma del EVENTO — esperado: SIGNATURE_INVALID; observado: SIGNATURE_INVALID
+  ✔ [P16] Bytes del EVENTO con la firma de la ALERTA — esperado: SIGNATURE_INVALID; observado: SIGNATURE_INVALID
+  ✔ [P16] tipo_doc del EVENTO reescrito a ALERTA (firma original) — esperado: SIGNATURE_INVALID; observado: SIGNATURE_INVALID
+  ✔ [P07] Control: el rol app sí puede leer la alerta — esperado: SELECT → 1; observado: SELECT → 1
+  ✔ [P07] UPDATE "AlertaPublicada" SET "mensaje" = 'alterado' WHERE id = 'ce32a599-97c4-494d-8900-1d4ab73675cd' — esperado: permission denied; observado: ERROR:  permission denied for table AlertaPublicada
+  ✔ [P07] DELETE FROM "AlertaPublicada" WHERE id = 'ce32a599-97c4-494d-8900-1d4ab73675cd' — esperado: permission denied; observado: ERROR:  permission denied for table AlertaPublicada
+  ✔ [P07] TRUNCATE "AlertaPublicada" — esperado: permission denied; observado: ERROR:  permission denied for table AlertaPublicada
+  ✔ [P07] UPDATE "EventoAlerta" SET "firma" = 'x' WHERE "alertaId" = 'ce32a599-97c4-494d-8900-1d4ab73675cd' — esperado: permission denied; observado: ERROR:  permission denied for table EventoAlerta
+  ✔ [P07] DELETE FROM "EventoAlerta" WHERE "alertaId" = 'ce32a599-97c4-494d-8900-1d4ab73675cd' — esperado: permission denied; observado: ERROR:  permission denied for table EventoAlerta
+  ✔ [P07] TRUNCATE "EventoAlerta" — esperado: permission denied; observado: ERROR:  permission denied for table EventoAlerta
+  ✔ [P07] UPDATE "EstadoAlerta" SET "firma" = 'x' WHERE "alertaId" = 'ce32a599-97c4-494d-8900-1d4ab73675cd' — esperado: permission denied; observado: ERROR:  permission denied for table EstadoAlerta
+  ✔ [P07] DELETE FROM "EstadoAlerta" WHERE "alertaId" = 'ce32a599-97c4-494d-8900-1d4ab73675cd' — esperado: permission denied; observado: ERROR:  permission denied for table EstadoAlerta
+  ✔ [P07] TRUNCATE "EstadoAlerta" — esperado: permission denied; observado: ERROR:  permission denied for table EstadoAlerta
+  ✔ [P07] UPDATE "AuditLog" SET "action" = 'X' WHERE true — esperado: permission denied; observado: ERROR:  permission denied for table AuditLog
+  ✔ [P07] DELETE FROM "AuditLog" WHERE true — esperado: permission denied; observado: ERROR:  permission denied for table AuditLog
+  ✔ [P07] TRUNCATE "AuditLog" — esperado: permission denied; observado: ERROR:  permission denied for table AuditLog
+  ✔ [P07] UPDATE "ClavePublica" SET "jwk" = '{}' WHERE true — esperado: permission denied; observado: ERROR:  permission denied for table ClavePublica
+  ✔ [P07] DELETE FROM "ClavePublica" WHERE true — esperado: permission denied; observado: ERROR:  permission denied for table ClavePublica
+  ✔ [P07] TRUNCATE "ClavePublica" — esperado: permission denied; observado: ERROR:  permission denied for table ClavePublica
+  ✔ [P07] La API no expone PUT /alerts/:id — esperado: 404; observado: 404
+  ✔ [P07] La API no expone PATCH /alerts/:id — esperado: 404; observado: 404
+  ✔ [P07] La API no expone DELETE /alerts/:id — esperado: 404; observado: 404
+  ✔ [P07] La alerta conserva su hash original tras los intentos — esperado: 5a4539c20683dbc8…; observado: 5a4539c20683dbc8…
+  ✔ [P15] A1. el contenedor api corre como el usuario 10002 (grupos: 10002 10001) — esperado: PASS; observado: PASS
+  ✔ [P15] A2. el contenedor api no monta ninguna ruta de secretos (montajes: /run/signer /run/trust/manifest.json ) — esperado: PASS; observado: PASS
+  ✔ [P15] A3. node -e "fs.readFileSync('/run/secrets/signer-private-key.pem')" desde api → ENOENT (la clave no está montada) — esperado: PASS; observado: PASS
+  ✔ [P15] B.  con la clave montada (10001:10001, 0400), api (10002 + grupo 10001) → EACCES — esperado: PASS; observado: PASS
+  ✔ [P15] C.  control: el usuario 10001 (firmante) sí la lee → LEIDA — esperado: PASS; observado: PASS
+  ✔ [P15] El script termina sin fallos — esperado: exit 0; observado: exit 0
+
+Resumen G2:
+  P02c: APROBADO (6/6)
+  P03: APROBADO (8/8)
+  P06: APROBADO (9/9)
+  P16: APROBADO (6/6)
+  P07: APROBADO (20/20)
+  P15: APROBADO (6/6)

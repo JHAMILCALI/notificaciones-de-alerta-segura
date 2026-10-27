@@ -1,0 +1,16 @@
+$ pnpm --filter @alertasegura/api test:e2e
+$ pnpm --filter @alertasegura/database build
+$ prisma generate && tsc -p tsconfig.json
+Loaded Prisma config from prisma.config.ts.
+
+Prisma schema loaded from prisma\schema.prisma.
+
+✔ Generated Prisma Client (7.10.1) to .\src\generated in 161ms
+
+$ jest --config ./test/jest-e2e.json --runInBand
+
+Test Suites: 4 passed, 4 total
+Tests:       77 passed, 77 total
+Snapshots:   0 total
+Time:        16.65 s
+Ran all test suites.

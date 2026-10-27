@@ -1,0 +1,19 @@
+  ✔ Inicio público (consulta ciudadana) carga — Alertas oficiales verificables
+  ✔ /panel sin sesión redirige a /login — http://localhost:5173/login
+  ✔ Contraseña errónea: mensaje genérico (401) — Correo o contraseña incorrectos.
+  ✔ El campo contraseña se limpia tras el error — vacío
+  ✔ Login emisor 1 → /panel con rol y permisos — Panel | Usuario | Emisor de ejemplo 1 | Correo | emisor1@alertasegura.local | Rol | Emisor (ISSUER) | Permisos
+  ✔ Cookie as_session HttpOnly + SameSite=Strict en el navegador — httpOnly=true sameSite=Strict path=/
+  ✔ JavaScript no ve la sesión ni el CSRF; nada en local/sessionStorage — document.cookie="" localStorage=0 sessionStorage=0
+  ✔ Crear borrador desde la UI: 201 con X-CSRF-Token y aparece en la lista — POST /drafts 201, X-CSRF-Token enviado
+  ✔ P13 en Chrome: los vectores firmados en Node verifican con Web Crypto — 5 de 5 verificados correctamente; crypto.subtle nativo=true
+  ✔ Campo alterado → firma rechazada — antes: "Firma válida" · después: "Firma INVÁLIDA: contenido alterado"
+  ✔ Clave añadida → firma rechazada — "Firma INVÁLIDA: contenido alterado"
+  ✔ Bit de la firma alterado → rechazada — "Firma INVÁLIDA: contenido alterado"
+  ✔ Restaurar original → vuelve a verificar — "Firma válida"
+  ✔ Laboratorio a 360 px sin desbordamiento horizontal — scrollWidth - clientWidth = 0px
+  ✔ Panel a 360 px sin desbordamiento horizontal — 0px
+  ✔ Logout: cookie eliminada y /panel vuelve a pedir login — as_session presente=false; url=http://localhost:5173/login
+  ✔ Sin errores inesperados en la consola — 7 errores esperados (401 del login erróneo / sesión)
+
+Chrome 155.0.8059.85: APROBADO

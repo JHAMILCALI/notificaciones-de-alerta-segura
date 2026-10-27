@@ -1,0 +1,52 @@
+{
+  "id": "P16",
+  "title": "Sustituir firma EVENTO por firma ALERTA → rechazo por tipo_doc o bytes",
+  "base": "http://localhost:3000/api/v1",
+  "startedAt": "2026-10-26T23:32:47.550Z",
+  "finishedAt": "2026-10-26T23:33:02.868Z",
+  "preparation": {
+    "manifestVersion": 1,
+    "keyIdActivo": "llVcSpHkfKfuUn1u84xuiuas6VPUPn2dIrU9KTob75c",
+    "rootKeyId": "spGtZx5pWxQCw3jlHWaV-2iRbhUzbcyjSk00aUQzDuk",
+    "alertaId": "ce32a599-97c4-494d-8900-1d4ab73675cd"
+  },
+  "steps": [
+    {
+      "step": "EVENTO real presentado como ALERTA",
+      "expected": "TIPO_DOC_MISMATCH",
+      "observed": "TIPO_DOC_MISMATCH",
+      "result": "OK"
+    },
+    {
+      "step": "ALERTA real presentada como EVENTO",
+      "expected": "TIPO_DOC_MISMATCH",
+      "observed": "TIPO_DOC_MISMATCH",
+      "result": "OK"
+    },
+    {
+      "step": "ESTADO real presentado como EVENTO",
+      "expected": "TIPO_DOC_MISMATCH",
+      "observed": "TIPO_DOC_MISMATCH",
+      "result": "OK"
+    },
+    {
+      "step": "Bytes de la ALERTA con la firma del EVENTO",
+      "expected": "SIGNATURE_INVALID",
+      "observed": "SIGNATURE_INVALID",
+      "result": "OK"
+    },
+    {
+      "step": "Bytes del EVENTO con la firma de la ALERTA",
+      "expected": "SIGNATURE_INVALID",
+      "observed": "SIGNATURE_INVALID",
+      "result": "OK"
+    },
+    {
+      "step": "tipo_doc del EVENTO reescrito a ALERTA (firma original)",
+      "expected": "SIGNATURE_INVALID",
+      "observed": "SIGNATURE_INVALID",
+      "result": "OK"
+    }
+  ],
+  "status": "APROBADO"
+}

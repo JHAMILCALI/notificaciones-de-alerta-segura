@@ -1,0 +1,134 @@
+{
+  "id": "P07",
+  "title": "UPDATE/DELETE SQL sobre publicaciones con el rol app → privilegio denegado",
+  "base": "http://localhost:3000/api/v1",
+  "startedAt": "2026-10-26T23:32:47.559Z",
+  "finishedAt": "2026-10-26T23:33:02.870Z",
+  "preparation": {
+    "role": "alertasegura_app (contraseña APP_DB_PASSWORD del .env, no registrada)",
+    "alertaId": "ce32a599-97c4-494d-8900-1d4ab73675cd"
+  },
+  "steps": [
+    {
+      "step": "Control: el rol app sí puede leer la alerta",
+      "expected": "SELECT → 1",
+      "observed": "SELECT → 1",
+      "result": "OK"
+    },
+    {
+      "step": "UPDATE \"AlertaPublicada\" SET \"mensaje\" = 'alterado' WHERE id = 'ce32a599-97c4-494d-8900-1d4ab73675cd'",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table AlertaPublicada",
+      "result": "OK"
+    },
+    {
+      "step": "DELETE FROM \"AlertaPublicada\" WHERE id = 'ce32a599-97c4-494d-8900-1d4ab73675cd'",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table AlertaPublicada",
+      "result": "OK"
+    },
+    {
+      "step": "TRUNCATE \"AlertaPublicada\"",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table AlertaPublicada",
+      "result": "OK"
+    },
+    {
+      "step": "UPDATE \"EventoAlerta\" SET \"firma\" = 'x' WHERE \"alertaId\" = 'ce32a599-97c4-494d-8900-1d4ab73675cd'",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table EventoAlerta",
+      "result": "OK"
+    },
+    {
+      "step": "DELETE FROM \"EventoAlerta\" WHERE \"alertaId\" = 'ce32a599-97c4-494d-8900-1d4ab73675cd'",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table EventoAlerta",
+      "result": "OK"
+    },
+    {
+      "step": "TRUNCATE \"EventoAlerta\"",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table EventoAlerta",
+      "result": "OK"
+    },
+    {
+      "step": "UPDATE \"EstadoAlerta\" SET \"firma\" = 'x' WHERE \"alertaId\" = 'ce32a599-97c4-494d-8900-1d4ab73675cd'",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table EstadoAlerta",
+      "result": "OK"
+    },
+    {
+      "step": "DELETE FROM \"EstadoAlerta\" WHERE \"alertaId\" = 'ce32a599-97c4-494d-8900-1d4ab73675cd'",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table EstadoAlerta",
+      "result": "OK"
+    },
+    {
+      "step": "TRUNCATE \"EstadoAlerta\"",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table EstadoAlerta",
+      "result": "OK"
+    },
+    {
+      "step": "UPDATE \"AuditLog\" SET \"action\" = 'X' WHERE true",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table AuditLog",
+      "result": "OK"
+    },
+    {
+      "step": "DELETE FROM \"AuditLog\" WHERE true",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table AuditLog",
+      "result": "OK"
+    },
+    {
+      "step": "TRUNCATE \"AuditLog\"",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table AuditLog",
+      "result": "OK"
+    },
+    {
+      "step": "UPDATE \"ClavePublica\" SET \"jwk\" = '{}' WHERE true",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table ClavePublica",
+      "result": "OK"
+    },
+    {
+      "step": "DELETE FROM \"ClavePublica\" WHERE true",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table ClavePublica",
+      "result": "OK"
+    },
+    {
+      "step": "TRUNCATE \"ClavePublica\"",
+      "expected": "permission denied",
+      "observed": "ERROR:  permission denied for table ClavePublica",
+      "result": "OK"
+    },
+    {
+      "step": "La API no expone PUT /alerts/:id",
+      "expected": "404",
+      "observed": "404",
+      "result": "OK"
+    },
+    {
+      "step": "La API no expone PATCH /alerts/:id",
+      "expected": "404",
+      "observed": "404",
+      "result": "OK"
+    },
+    {
+      "step": "La API no expone DELETE /alerts/:id",
+      "expected": "404",
+      "observed": "404",
+      "result": "OK"
+    },
+    {
+      "step": "La alerta conserva su hash original tras los intentos",
+      "expected": "5a4539c20683dbc8…",
+      "observed": "5a4539c20683dbc8…",
+      "result": "OK"
+    }
+  ],
+  "status": "APROBADO"
+}

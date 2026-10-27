@@ -1,0 +1,6 @@
+{
+ "canonical": "{\"coords\":[-17.4,-66.03],\"emitida\":\"2026-10-19T19:00:00Z\",\"nivel\":3,\"texto\":\"Crecida del río — evacuar 🚨\",\"x\":1e+21,\"zona\":\"Sacaba\"}",
+ "firmaNodeVerificaWebCrypto": true,
+ "mismoDocOtroOrdenVerifica": true,
+ "alteradoRechazado": true
+}

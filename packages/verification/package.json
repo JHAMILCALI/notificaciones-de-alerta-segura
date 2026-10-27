@@ -12,13 +12,19 @@
     }
   },
   "scripts": {
-    "build": "tsc -p tsconfig.json",
-    "dev": "tsc -p tsconfig.json --watch"
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json",
+    "dev": "tsc -p tsconfig.build.json --watch",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run",
+    "vectors": "node scripts/generate-p13-vectors.ts",
+    "vectors:p16": "node scripts/generate-p16-vectors.ts"
   },
   "dependencies": {
     "@alertasegura/shared": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "~6.0.2"
+    "@types/node": "^26.6.5",
+    "typescript": "~6.0.2",
+    "vitest": "^5.0.5"
   }
 }

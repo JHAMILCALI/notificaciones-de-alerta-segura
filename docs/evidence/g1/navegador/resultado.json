@@ -1,0 +1,105 @@
+{
+  "at": "2026-10-20T02:59:40.845Z",
+  "browser": "Google Chrome 155.0.8059.85 (headless)",
+  "web": "http://localhost:5173",
+  "steps": [
+    {
+      "step": "Inicio público (consulta ciudadana) carga",
+      "result": "OK",
+      "observed": "Alertas oficiales verificables",
+      "screenshot": "01-inicio.png"
+    },
+    {
+      "step": "/panel sin sesión redirige a /login",
+      "result": "OK",
+      "observed": "http://localhost:5173/login",
+      "screenshot": "02-panel-sin-sesion-redirige.png"
+    },
+    {
+      "step": "Contraseña errónea: mensaje genérico (401)",
+      "result": "OK",
+      "observed": "Correo o contraseña incorrectos.",
+      "screenshot": "03-login-error-generico.png"
+    },
+    {
+      "step": "El campo contraseña se limpia tras el error",
+      "result": "OK",
+      "observed": "vacío"
+    },
+    {
+      "step": "Login emisor 1 → /panel con rol y permisos",
+      "result": "OK",
+      "observed": "Panel | Usuario | Emisor de ejemplo 1 | Correo | emisor1@alertasegura.local | Rol | Emisor (ISSUER) | Permisos",
+      "screenshot": "04-panel-emisor.png"
+    },
+    {
+      "step": "Cookie as_session HttpOnly + SameSite=Strict en el navegador",
+      "result": "OK",
+      "observed": "httpOnly=true sameSite=Strict path=/"
+    },
+    {
+      "step": "JavaScript no ve la sesión ni el CSRF; nada en local/sessionStorage",
+      "result": "OK",
+      "observed": "document.cookie=\"\" localStorage=0 sessionStorage=0"
+    },
+    {
+      "step": "Crear borrador desde la UI: 201 con X-CSRF-Token y aparece en la lista",
+      "result": "OK",
+      "observed": "POST /drafts 201, X-CSRF-Token enviado",
+      "screenshot": "05-borrador-creado.png"
+    },
+    {
+      "step": "P13 en Chrome: los vectores firmados en Node verifican con Web Crypto",
+      "result": "OK",
+      "observed": "5 de 5 verificados correctamente; crypto.subtle nativo=true",
+      "screenshot": "06-lab-vectores-validos.png"
+    },
+    {
+      "step": "Campo alterado → firma rechazada",
+      "result": "OK",
+      "observed": "antes: \"Firma válida\" · después: \"Firma INVÁLIDA: contenido alterado\"",
+      "screenshot": "07-lab-campo-alterado.png"
+    },
+    {
+      "step": "Clave añadida → firma rechazada",
+      "result": "OK",
+      "observed": "\"Firma INVÁLIDA: contenido alterado\"",
+      "screenshot": "08-lab-clave-anadida.png"
+    },
+    {
+      "step": "Bit de la firma alterado → rechazada",
+      "result": "OK",
+      "observed": "\"Firma INVÁLIDA: contenido alterado\"",
+      "screenshot": "09-lab-bit-firma.png"
+    },
+    {
+      "step": "Restaurar original → vuelve a verificar",
+      "result": "OK",
+      "observed": "\"Firma válida\""
+    },
+    {
+      "step": "Laboratorio a 360 px sin desbordamiento horizontal",
+      "result": "OK",
+      "observed": "scrollWidth - clientWidth = 0px",
+      "screenshot": "10-lab-movil-360.png"
+    },
+    {
+      "step": "Panel a 360 px sin desbordamiento horizontal",
+      "result": "OK",
+      "observed": "0px",
+      "screenshot": "11-panel-movil-360.png"
+    },
+    {
+      "step": "Logout: cookie eliminada y /panel vuelve a pedir login",
+      "result": "OK",
+      "observed": "as_session presente=false; url=http://localhost:5173/login",
+      "screenshot": "12-logout.png"
+    },
+    {
+      "step": "Sin errores inesperados en la consola",
+      "result": "OK",
+      "observed": "7 errores esperados (401 del login erróneo / sesión)"
+    }
+  ],
+  "status": "APROBADO"
+}

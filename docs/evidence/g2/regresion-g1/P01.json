@@ -1,0 +1,215 @@
+{
+  "id": "P01",
+  "title": "Login seguro, sesiones y roles",
+  "base": "http://localhost:3000/api/v1",
+  "startedAt": "2026-10-26T23:34:27.098Z",
+  "finishedAt": "2026-10-26T23:35:41.596Z",
+  "preparation": {
+    "users": [
+      "ADMIN del seed",
+      "AUDITOR del seed",
+      "emisores A y B dados de alta con `pnpm lab issuer:add` (D-1)"
+    ],
+    "note": "Las contraseñas no se registran; las cookies aparecen truncadas."
+  },
+  "steps": [
+    {
+      "step": "GET /auth/csrf entrega token",
+      "expected": "200",
+      "observed": "200",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "csrfToken": "SrUE73NzyemQiO9k0WHK5JXczhfw7aQz.WTJ43Z3FZBqL3YQvPX1AfHHviQ6pezHptrA9CVdTh_A"
+        }
+      }
+    },
+    {
+      "step": "Login ADMIN con contraseña errónea",
+      "expected": "401 INVALID_CREDENTIALS",
+      "observed": "401 INVALID_CREDENTIALS",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 401,
+          "code": "INVALID_CREDENTIALS",
+          "message": "Credenciales inválidas"
+        }
+      }
+    },
+    {
+      "step": "Login con cuenta inexistente (mismo mensaje)",
+      "expected": "401 INVALID_CREDENTIALS",
+      "observed": "401 INVALID_CREDENTIALS",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 401,
+          "code": "INVALID_CREDENTIALS",
+          "message": "Credenciales inválidas"
+        }
+      }
+    },
+    {
+      "step": "Login ADMIN correcto",
+      "expected": "200",
+      "observed": "200",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "user": {
+            "id": "d58f1b15-7f9f-4735-95c3-3c092f042112",
+            "email": "admin@alertasegura.local",
+            "displayName": "Administrador Local",
+            "role": "ADMIN",
+            "permissions": [
+              "users:read",
+              "audit:read"
+            ]
+          },
+          "csrfToken": "DTdozwRjiOAaahd7jRDDF3bf_mZwxVeI.1ooGnoKj4dC0SrIeNzswSkTiVmeZX0iY0kqrRx0eiaA"
+        }
+      }
+    },
+    {
+      "step": "Cookie de sesión HttpOnly + SameSite=Strict + Path=/",
+      "expected": "HttpOnly; SameSite=Strict; Path=/",
+      "observed": "as_session=<43 caracteres omitidos>; Max-Age=28800; Path=/; Expires=Tue, 27 Oct 2026 07:34:28 GMT; HttpOnly; SameSite=Strict",
+      "result": "OK"
+    },
+    {
+      "step": "La respuesta no expone passwordHash",
+      "expected": "sin passwordHash",
+      "observed": "ausente",
+      "result": "OK"
+    },
+    {
+      "step": "GET /auth/me: ADMIN con users:read y audit:read, sin publicar ni dar de alta emisores",
+      "expected": "200 ADMIN [users:read, audit:read]",
+      "observed": "200 ADMIN [users:read,audit:read]",
+      "result": "OK"
+    },
+    {
+      "step": "D-1: el ADMIN ya no da de alta emisores por la API (endpoint retirado)",
+      "expected": "404",
+      "observed": "404 NOT_FOUND",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 404,
+          "code": "NOT_FOUND",
+          "message": "Recurso no encontrado"
+        }
+      }
+    },
+    {
+      "step": "Laboratorio da de alta al emisor A (pnpm lab issuer:add)",
+      "expected": "emisor creado",
+      "observed": "$ tsx lab/lab.ts issuer:add --email emisor-a-ad48a07b@example.test --name 'Emisor A G1'",
+      "result": "OK"
+    },
+    {
+      "step": "Laboratorio da de alta al emisor B (pnpm lab issuer:add)",
+      "expected": "emisor creado",
+      "observed": "$ tsx lab/lab.ts issuer:add --email emisor-b-76c3ad28@example.test --name 'Emisor B G1'",
+      "result": "OK"
+    },
+    {
+      "step": "Login AUDITOR correcto",
+      "expected": "200",
+      "observed": "200",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "user": {
+            "id": "df674462-c2a5-48a2-be12-de39fab5b103",
+            "email": "auditor@alertasegura.local",
+            "displayName": "Auditor de ejemplo",
+            "role": "AUDITOR",
+            "permissions": [
+              "audit:read"
+            ]
+          },
+          "csrfToken": "ZRmisubKItZRqNaUzx4bVcaatWBEnjdX.ydrUcHInJHV17WofKyqvhsglV8eCpyPoeENVX5ylGa8"
+        }
+      }
+    },
+    {
+      "step": "AUDITOR lee la auditoría",
+      "expected": "200 con entradas",
+      "observed": "200 5 entradas",
+      "result": "OK"
+    },
+    {
+      "step": "Alta de emisores auditada (ISSUER_PROVISIONED con actor lab-script)",
+      "expected": "ambos emisores registrados",
+      "observed": "registrado, registrado",
+      "result": "OK"
+    },
+    {
+      "step": "Login emisor A correcto",
+      "expected": "200",
+      "observed": "200",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "user": {
+            "id": "be77f933-d5bf-46c0-82a4-45274efcbf07",
+            "email": "emisor-a-ad48a07b@example.test",
+            "displayName": "Emisor A G1",
+            "role": "ISSUER",
+            "permissions": [
+              "drafts:create",
+              "drafts:read-own",
+              "alerts:publish",
+              "alerts:cancel"
+            ]
+          },
+          "csrfToken": "XtFmGZCNck2kRze6Co3t6TVXgbw9CjRT.qt6sLR9g58GNhLshmX-NH73QuEFmsuFLbbRYWsiKpvI"
+        }
+      }
+    },
+    {
+      "step": "Emisor A tiene rol ISSUER con alerts:publish y alerts:cancel",
+      "expected": "200 ISSUER",
+      "observed": "200 ISSUER [drafts:create,drafts:read-own,alerts:publish,alerts:cancel]",
+      "result": "OK"
+    },
+    {
+      "step": "Logout ADMIN",
+      "expected": "204",
+      "observed": "204",
+      "result": "OK",
+      "detail": {
+        "response": null
+      }
+    },
+    {
+      "step": "La cookie anterior al logout ya no vale",
+      "expected": "401 UNAUTHENTICATED",
+      "observed": "401 UNAUTHENTICATED",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 401,
+          "code": "UNAUTHENTICATED",
+          "message": "Autenticación requerida"
+        }
+      }
+    },
+    {
+      "step": "Token de sesión inventado se rechaza",
+      "expected": "401 UNAUTHENTICATED",
+      "observed": "401 UNAUTHENTICATED",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 401,
+          "code": "UNAUTHENTICATED",
+          "message": "Autenticación requerida"
+        }
+      }
+    }
+  ],
+  "status": "APROBADO"
+}

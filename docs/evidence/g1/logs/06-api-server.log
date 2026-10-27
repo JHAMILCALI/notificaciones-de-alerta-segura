@@ -1,0 +1,30 @@
+$ node dist/main
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[NestFactory] [39m[32mStarting Nest application...[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mConfigModule dependencies initialized[39m[38;5;3m +21ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDatabaseModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mHealthModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mRateLimitModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuditModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAppModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mUsersModule dependencies initialized[39m[38;5;3m +1ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mAuthModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[InstanceLoader] [39m[32mDraftsModule dependencies initialized[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuditController {/api/v1/audit}:[39m[38;5;3m +7ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/v1/audit, GET} route[39m[38;5;3m +3ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mAuthController {/api/v1/auth}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/v1/auth/csrf, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/v1/auth/login, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/v1/auth/logout, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/v1/auth/me, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mUsersController {/api/v1/admin}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/v1/admin/users, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/v1/admin/issuers, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mDraftsController {/api/v1/drafts}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/v1/drafts, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/v1/drafts, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/v1/drafts/:draftId, GET} route[39m[38;5;3m +1ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/v1/drafts/:draftId/publish, POST} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RoutesResolver] [39m[32mHealthController {/api/v1/health}:[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[RouterExplorer] [39m[32mMapped {/api/v1/health, GET} route[39m[38;5;3m +0ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[NestApplication] [39m[32mNest application successfully started[39m[38;5;3m +93ms[39m
+[32m[Nest] 30668  - [39m19/10/2026, 19:29:36 [32m    LOG[39m [38;5;3m[Bootstrap] [39m[32mAPI escuchando en el puerto 3000 (/api/v1)[39m

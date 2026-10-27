@@ -15,10 +15,20 @@ coverage/
 *.pem
 *.key
 infra/secrets/
+# Claves y manifiestos del laboratorio (semana 2): la clave del firmante y el manifiesto emitido localmente.
+# La clave raíz se guarda FUERA del repositorio (~/.alertasegura-lab por defecto).
+secrets/
+*.private.jwk
 
 # Logs and editor files
 *.log
+# Salidas reales de comandos que forman parte de la evidencia de los gates
+!docs/evidence/**/*.log
 .idea/
 .vscode/
 .DS_Store
 Thumbs.db
+
+# Worktrees de los agentes de la semana 2 (shiro, moto): cada uno trabaja en su rama; las ramas y sus commits
+# viven en el repositorio, la carpeta es solo la copia de trabajo local.
+.worktrees/

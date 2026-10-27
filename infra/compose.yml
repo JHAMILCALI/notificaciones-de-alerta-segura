@@ -15,8 +15,34 @@ services:
       timeout: 5s
       retries: 10
 
+  # ---- Perfil g2 (semana 2): postgres + migrate + signer + api --------------------------------------------
+  #   docker compose -f infra/compose.yml --env-file .env --profile g2 up --build
+  # Necesita en el .env: APP_DB_PASSWORD, CSRF_SECRET y SIGNER_PRIVATE_KEY_FILE (ruta de la clave del firmante).
+
+  # Tarea de un solo uso: aplica las migraciones y crea/actualiza el rol alertasegura_app con el rol PROPIETARIO.
+  # Es el único servicio, junto con postgres, que conoce las credenciales del propietario.
+  migrate:
+    profiles: ["g2"]
+    build:
+      context: ..
+      dockerfile: infra/docker/api.Dockerfile
+      target: tools
+    command:
+      - sh
+      - -c
+      - pnpm --filter @alertasegura/database db:deploy && pnpm --filter @alertasegura/database db:roles
+    environment:
+      DATABASE_MIGRATION_URL: postgresql://${POSTGRES_USER:-alertasegura}:${POSTGRES_PASSWORD:-change-me-locally}@postgres:5432/${POSTGRES_DB:-alertasegura}
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?defina APP_DB_PASSWORD en el .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  # Firmante aislado: es el ÚNICO contenedor que monta la clave privada. Sin salida a red (red interna) y sin
+  # puertos: la API le habla por un socket Unix en un volumen compartido.
   signer:
-    profiles: ["signer"]
+    profiles: ["signer", "g2"]
     build:
       context: ..
       dockerfile: infra/docker/signer.Dockerfile
@@ -27,16 +53,60 @@ services:
       - no-new-privileges:true
     environment:
       SIGNER_PRIVATE_KEY_PATH: /run/secrets/signer-private-key.pem
+      SIGNER_SOCKET_PATH: /run/signer/signer.sock
     volumes:
       - type: bind
         source: ${SIGNER_PRIVATE_KEY_FILE:-./secrets/signer-private-key.pem}
         target: /run/secrets/signer-private-key.pem
         read_only: true
+      - signer_socket:/run/signer
     networks:
       - signer_internal
 
+  # API: usuario 10002, sin la clave privada (P15) y con el rol SQL alertasegura_app (sin UPDATE/DELETE en las
+  # tablas inmutables, P07). Entra al socket del firmante con el grupo suplementario 10001 (socket 0660).
+  api:
+    profiles: ["g2"]
+    build:
+      context: ..
+      dockerfile: infra/docker/api.Dockerfile
+      target: runtime
+    user: "10002:10002"
+    group_add: ["10001"]
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: ["ALL"]
+    security_opt:
+      - no-new-privileges:true
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      signer:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      DATABASE_URL: postgresql://alertasegura_app:${APP_DB_PASSWORD:?defina APP_DB_PASSWORD en el .env}@postgres:5432/${POSTGRES_DB:-alertasegura}
+      WEB_ORIGIN: ${WEB_ORIGIN:-http://localhost:5173}
+      CSRF_SECRET: ${CSRF_SECRET:?defina CSRF_SECRET en el .env}
+      COOKIE_SECURE: ${COOKIE_SECURE:-false}
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+      SIGNER_SOCKET_PATH: /run/signer/signer.sock
+      TRUST_MANIFEST_FILE: /run/trust/manifest.json
+    ports:
+      - "127.0.0.1:${API_PORT:-3000}:3000"
+    volumes:
+      - signer_socket:/run/signer
+      # Manifiesto de confianza firmado por la raíz (lo emite la CLI offline); la API solo lo lee.
+      - type: bind
+        source: ${TRUST_MANIFEST_HOST_FILE:-./secrets/manifest.json}
+        target: /run/trust/manifest.json
+        read_only: true
+
 volumes:
   postgres_data:
+  signer_socket:
 
 networks:
   signer_internal:

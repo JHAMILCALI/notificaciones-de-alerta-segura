@@ -1,0 +1,9 @@
+LIMPIEZA · localhost:5433/alertasegura
+Borradores en la BD: 3 · creados por pruebas automatizadas: 1 · se conservan: 2
+  - db8ba41f-88b5-4a93-8e65-5a6321b8f39a  "Alerta G1 94555e82"  (emisor-a-b013d3ef@example.test, 2026-10-20T03:21:16.129Z)  ← tests/security/g1-acceptance.mjs
+Borrados: 1. Borradores restantes: 2.
+exit 0
+
+--- verificación posterior (simulación)
+SIMULACIÓN (sin --apply no se modifica nada) · localhost:5433/alertasegura
+Borradores en la BD: 2 · creados por pruebas automatizadas: 0 · se conservan: 2

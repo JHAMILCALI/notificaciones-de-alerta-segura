@@ -1,10 +1,240 @@
+// Cliente generado en CommonJS dentro de src/generated (ignorado en Git) para que lo consuman
+// NestJS (CJS) y Jest. Ver docs/coordination/forge-report.md.
 generator client {
-  provider = "prisma-client"
-  output   = "../generated/client"
+  provider               = "prisma-client"
+  output                 = "../src/generated"
+  moduleFormat           = "cjs"
+  runtime                = "nodejs"
+  generatedFileExtension = "ts"
+  importFileExtension    = ""
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-// Los modelos se incorporarán junto con las reglas de acceso y sus pruebas.
+enum Role {
+  ADMIN
+  ISSUER
+  AUDITOR
+}
+
+enum UserStatus {
+  ACTIVE
+  DISABLED
+}
+
+/// Catálogo de Bolivia (D-4); la fuente de verdad de los valores es packages/shared/src/constants/bolivia.ts.
+enum TipoAlerta {
+  LLUVIAS_INTENSAS
+  TORMENTA_ELECTRICA
+  GRANIZADA
+  NEVADA
+  HELADA
+  OLA_DE_FRIO
+  OLA_DE_CALOR
+  VIENTOS_FUERTES
+  INUNDACION
+  DESBORDE_DE_RIO
+  MAZAMORRA
+  SEQUIA
+  INCENDIO_FORESTAL
+  RADIACION_UV_EXTREMA
+}
+
+enum Departamento {
+  LA_PAZ
+  ORURO
+  POTOSI
+  COCHABAMBA
+  CHUQUISACA
+  TARIJA
+  SANTA_CRUZ
+  BENI
+  PANDO
+}
+
+enum NivelAlerta {
+  AMARILLA
+  NARANJA
+  ROJA
+}
+
+enum DraftStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum AuditOutcome {
+  SUCCESS
+  DENIED
+  FAILURE
+}
+
+model User {
+  id           String     @id @default(uuid()) @db.Uuid
+  /// Siempre en minúsculas y recortado (CHECK en la migración).
+  email        String     @unique
+  displayName  String
+  passwordHash String
+  role         Role
+  status       UserStatus @default(ACTIVE)
+  createdById  String?    @db.Uuid
+  createdAt    DateTime   @default(now()) @db.Timestamptz(3)
+  updatedAt    DateTime   @updatedAt @db.Timestamptz(3)
+
+  createdBy User?  @relation("UserCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  created   User[] @relation("UserCreatedBy")
+
+  sessions Session[]
+  drafts   Draft[]
+  alertas  AlertaPublicada[]
+
+  @@index([role])
+  @@index([createdById])
+}
+
+model Session {
+  id         String    @id @default(uuid()) @db.Uuid
+  /// SHA-256 (hex) del token de la cookie; el token en claro nunca se guarda.
+  tokenHash  String    @unique
+  userId     String    @db.Uuid
+  createdAt  DateTime  @default(now()) @db.Timestamptz(3)
+  lastSeenAt DateTime  @default(now()) @db.Timestamptz(3)
+  expiresAt  DateTime  @db.Timestamptz(3)
+  revokedAt  DateTime? @db.Timestamptz(3)
+  ip         String?
+  userAgent  String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, revokedAt])
+  @@index([expiresAt])
+}
+
+model Draft {
+  id            String       @id @default(uuid()) @db.Uuid
+  tipo          TipoAlerta
+  departamento  Departamento
+  /// Municipio o provincia; null si la alerta cubre todo el departamento.
+  municipio     String?
+  severidad     NivelAlerta
+  mensaje       String
+  /// 1 a 72 (CHECK en la migración). Al publicar: expira_en = emitida_en + vigenciaHoras.
+  vigenciaHoras Int
+  status        DraftStatus  @default(DRAFT)
+  /// Alerta publicada a partir de este borrador; null mientras sea DRAFT.
+  alertaId      String?      @unique @db.Uuid
+  ownerId       String       @db.Uuid
+  createdAt     DateTime     @default(now()) @db.Timestamptz(3)
+  updatedAt     DateTime     @updatedAt @db.Timestamptz(3)
+
+  owner        User             @relation(fields: [ownerId], references: [id], onDelete: Restrict)
+  alerta       AlertaPublicada? @relation("DraftAlerta", fields: [alertaId], references: [id], onDelete: Restrict)
+  alertaOrigen AlertaPublicada? @relation("AlertaDraft")
+
+  @@index([ownerId, createdAt(sort: Desc)])
+}
+
+/// Append-only: un trigger en la migración impide UPDATE y DELETE.
+model AuditLog {
+  id         String       @id @default(uuid()) @db.Uuid
+  occurredAt DateTime     @default(now()) @db.Timestamptz(3)
+  action     String
+  outcome    AuditOutcome
+  /// Sin FK a propósito: la evidencia sobrevive aunque cambie la tabla de usuarios.
+  actorId    String?      @db.Uuid
+  targetType String?
+  targetId   String?
+  ip         String?
+  userAgent  String?
+  metadata   Json         @default("{}")
+
+  @@index([occurredAt(sort: Desc)])
+  @@index([action, occurredAt(sort: Desc)])
+  @@index([actorId, occurredAt(sort: Desc)])
+}
+
+/// INMUTABLE (S2-12): el rol de la app solo tiene SELECT e INSERT, y un trigger bloquea UPDATE, DELETE y
+/// TRUNCATE incluso al propietario. `payloadCanonico` son los bytes JCS exactos que firmó el firmante:
+/// nunca se reconstruyen a partir de las columnas de resumen, que son solo una copia para listar.
+model AlertaPublicada {
+  /// = alerta_id dentro del documento firmado; lo genera la API antes de firmar.
+  id              String       @id @db.Uuid
+  emisorId        String       @db.Uuid
+  draftId         String       @unique @db.Uuid
+  payloadCanonico Bytes
+  /// SHA-256 (hex minúsculo) de payloadCanonico.
+  hashPayload     String       @unique
+  /// ECDSA P-256 P1363 en base64url.
+  firma           String
+  keyId           String
+  publishedAt     DateTime     @default(now()) @db.Timestamptz(3)
+  // Resumen para listar y filtrar (copia NO verificada).
+  tipo            TipoAlerta
+  departamento    Departamento
+  municipio       String?
+  severidad       NivelAlerta
+  mensaje         String
+  emitidaEn       DateTime     @db.Timestamptz(3)
+  expiraEn        DateTime     @db.Timestamptz(3)
+
+  emisor         User           @relation(fields: [emisorId], references: [id], onDelete: Restrict)
+  draft          Draft          @relation("AlertaDraft", fields: [draftId], references: [id], onDelete: Restrict)
+  draftPublicado Draft?         @relation("DraftAlerta")
+  evento         EventoAlerta?
+  estados        EstadoAlerta[]
+
+  /// Destino de la FK compuesta de EventoAlerta: ancla hashAlerta a los bytes exactos de la alerta.
+  @@unique([id, hashPayload])
+  @@index([publishedAt(sort: Desc)])
+  @@index([emisorId, publishedAt(sort: Desc)])
+}
+
+/// INMUTABLE. Una sola cancelación por alerta (alertaId único).
+model EventoAlerta {
+  /// = evento_id dentro del documento firmado.
+  id              String   @id @db.Uuid
+  alertaId        String   @unique @db.Uuid
+  payloadCanonico Bytes
+  hashEvento      String   @unique
+  /// SHA-256 de la ALERTA cancelada; la FK compuesta obliga a que coincida con hashPayload.
+  hashAlerta      String
+  firma           String
+  keyId           String
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+
+  alerta AlertaPublicada @relation(fields: [alertaId, hashAlerta], references: [id, hashPayload], onDelete: Restrict)
+
+  /// Exigido por Prisma para la relación 1:1 sobre la FK compuesta (alertaId ya es único por sí solo).
+  @@unique([alertaId, hashAlerta])
+}
+
+/// INMUTABLE (solo INSERT): cada regeneración del estado firmado añade una fila.
+model EstadoAlerta {
+  id              String   @id @default(uuid()) @db.Uuid
+  alertaId        String   @db.Uuid
+  /// 0 sin eventos; +1 por cada evento aceptado. Varias filas pueden compartir secuencia (regeneración).
+  secuencia       Int
+  payloadCanonico Bytes
+  hashPayload     String
+  firma           String
+  keyId           String
+  expiresAt       DateTime @db.Timestamptz(3)
+  createdAt       DateTime @default(now()) @db.Timestamptz(3)
+
+  alerta AlertaPublicada @relation(fields: [alertaId], references: [id], onDelete: Restrict)
+
+  @@index([alertaId, secuencia(sort: Desc), createdAt(sort: Desc)])
+}
+
+/// Inventario de claves públicas conocidas. NO es una autoridad de confianza: la confianza sale solo del
+/// manifiesto firmado por la raíz (S2-25 lo alimenta al arrancar, con INSERT de las claves nuevas).
+model ClavePublica {
+  /// SHA-256 (base64url) de la SPKI.
+  keyId           String   @id
+  jwk             Json
+  /// Número de manifiesto en el que se vio la clave por primera vez.
+  versionRegistro Int
+  creadoEn        DateTime @default(now()) @db.Timestamptz(3)
+}

@@ -1,0 +1,9 @@
+
+ RUN  v5.0.5 C:/2026-2/Tecnico superior/alertasegura/packages/verification
+
+
+ Test Files  1 passed | 4 skipped (5)
+      Tests  46 passed | 116 skipped (162)
+   Start at  19:35:43
+   Duration  1.54s (import 51%, transform 41%, tests 7%, worker 1%)
+

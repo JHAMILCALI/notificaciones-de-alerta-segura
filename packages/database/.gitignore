@@ -1,0 +1,3 @@
+# Cliente Prisma generado y salida de compilación
+src/generated/
+dist/

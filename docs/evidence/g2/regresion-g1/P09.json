@@ -1,0 +1,82 @@
+{
+  "id": "P09",
+  "title": "Solicitudes excesivas → 429",
+  "base": "http://localhost:3000/api/v1",
+  "startedAt": "2026-10-26T23:34:39.367Z",
+  "finishedAt": "2026-10-26T23:35:41.601Z",
+  "preparation": {
+    "limits": {
+      "loginPorCuenta": 5,
+      "loginPorIp": "10/60s",
+      "usuarioAutenticado": 120
+    },
+    "note": "Se espera 61s para empezar con la ventana de login por IP vacía."
+  },
+  "steps": [
+    {
+      "step": "Login por cuenta: 5 intentos 401 y el siguiente 429",
+      "expected": "5×401, 429",
+      "observed": "401,401,401,401,401,429",
+      "result": "OK"
+    },
+    {
+      "step": "429 incluye Retry-After",
+      "expected": "cabecera presente",
+      "observed": "900",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 429,
+          "code": "RATE_LIMITED",
+          "message": "Demasiadas solicitudes"
+        }
+      }
+    },
+    {
+      "step": "Login por IP con cuentas rotadas: 429 en el intento 11",
+      "expected": "429 en 11",
+      "observed": "401,401,401,401,429 (primer 429 en 11)",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 429,
+          "code": "RATE_LIMITED",
+          "message": "Demasiadas solicitudes"
+        },
+        "retryAfter": "60"
+      }
+    },
+    {
+      "step": "Usuario autenticado: 429 tras 120 peticiones",
+      "expected": "429 en la petición ≤ 121",
+      "observed": "{\"200\":120,\"429\":1} (primer 429 en 121)",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 429,
+          "code": "RATE_LIMITED",
+          "message": "Demasiadas solicitudes"
+        },
+        "retryAfter": "60"
+      }
+    },
+    {
+      "step": "Otro usuario no queda bloqueado por el límite del emisor A",
+      "expected": "200",
+      "observed": "200",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "drafts": []
+        }
+      }
+    },
+    {
+      "step": "Auditoría registra RATE_LIMITED",
+      "expected": "presente",
+      "observed": "presente",
+      "result": "OK"
+    }
+  ],
+  "status": "APROBADO"
+}

@@ -1,0 +1,15 @@
+LIMPIEZA · localhost:5433/alertasegura
+Borradores en la BD: 9 · creados por pruebas automatizadas: 7 · se conservan: 2
+  - bb811d16-44f5-4f8a-a326-515b0b0cc313  "Alerta G1 c1f987af"  (emisor-a-b9835f29@example.test, 2026-10-19T21:58:44.758Z)  ← tests/security/g1-acceptance.mjs
+  - 7aa3845c-4ca6-43e8-85fd-fe7565079e07  "Alerta G1 8f1c3e2b"  (emisor-a-6f738a3c@example.test, 2026-10-19T22:49:53.397Z)  ← tests/security/g1-acceptance.mjs
+  - 29fe98ae-78f2-452a-aeec-4babda5154e9  "Alerta G1 33be7399"  (emisor-a-92903da0@example.test, 2026-10-19T23:29:48.638Z)  ← tests/security/g1-acceptance.mjs
+  - 0bd54acb-b284-4cb8-8ff9-f10e071c97f2  "Prueba en navegador 02:54:52"  (emisor1@alertasegura.local, 2026-10-20T02:54:52.829Z)  ← tests/security/browser-walkthrough.mjs
+  - ce388036-f2b2-42f9-8524-b6421458d966  "Prueba en navegador 02:56:43"  (emisor1@alertasegura.local, 2026-10-20T02:56:43.650Z)  ← tests/security/browser-walkthrough.mjs
+  - 5dbb0fa7-8b77-4e3f-a257-542f16c9df92  "Prueba en navegador 02:59:35"  (emisor1@alertasegura.local, 2026-10-20T02:59:36.096Z)  ← tests/security/browser-walkthrough.mjs
+  - cd8638fc-e542-40e3-88d7-b064f3e17632  "Alerta G1 f339757a"  (emisor-a-9f8b26b1@example.test, 2026-10-20T03:19:03.116Z)  ← tests/security/g1-acceptance.mjs
+Borrados: 7. Borradores restantes: 2.
+exit 0
+
+--- verificación posterior (simulación)
+SIMULACIÓN (sin --apply no se modifica nada) · localhost:5433/alertasegura
+Borradores en la BD: 2 · creados por pruebas automatizadas: 0 · se conservan: 2

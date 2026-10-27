@@ -1,0 +1,148 @@
+{
+  "id": "P02b",
+  "title": "Usuario autenticado sin permisos intenta publicar → 403",
+  "base": "http://localhost:3000/api/v1",
+  "startedAt": "2026-10-26T23:34:35.865Z",
+  "finishedAt": "2026-10-26T23:35:41.600Z",
+  "preparation": {
+    "draft": "borrador a7744caf-0154-448e-86f6-84a6856f0fe7 del emisor A",
+    "actors": [
+      "AUDITOR (sin alerts:publish)",
+      "ADMIN (sin alerts:publish)",
+      "emisor B (no propietario)",
+      "emisor A (propietario)"
+    ]
+  },
+  "steps": [
+    {
+      "step": "AUDITOR publica",
+      "expected": "403 FORBIDDEN",
+      "observed": "403 FORBIDDEN",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 403,
+          "code": "FORBIDDEN",
+          "message": "No tiene permiso para realizar esta acción"
+        }
+      }
+    },
+    {
+      "step": "ADMIN publica (separación de funciones)",
+      "expected": "403 FORBIDDEN",
+      "observed": "403 FORBIDDEN",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 403,
+          "code": "FORBIDDEN",
+          "message": "No tiene permiso para realizar esta acción"
+        }
+      }
+    },
+    {
+      "step": "Preparación: login emisor B",
+      "expected": "200",
+      "observed": "200",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "user": {
+            "id": "73a177a5-2d36-49d4-a2e0-3c836faa8c37",
+            "email": "emisor-b-76c3ad28@example.test",
+            "displayName": "Emisor B G1",
+            "role": "ISSUER",
+            "permissions": [
+              "drafts:create",
+              "drafts:read-own",
+              "alerts:publish",
+              "alerts:cancel"
+            ]
+          },
+          "csrfToken": "efcd6rzteCu6pviGOCTtxQirOu4e8oy2.2bHhtOX0PT6fQ6ZlpqQ3cA2K5t-39hRqM2MaW3_WTkA"
+        }
+      }
+    },
+    {
+      "step": "Emisor B publica borrador de A (propiedad)",
+      "expected": "403 FORBIDDEN",
+      "observed": "403 FORBIDDEN",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 403,
+          "code": "FORBIDDEN",
+          "message": "No tiene permiso para realizar esta acción"
+        }
+      }
+    },
+    {
+      "step": "Emisor B lee borrador de A (propiedad)",
+      "expected": "403 FORBIDDEN",
+      "observed": "403 FORBIDDEN",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 403,
+          "code": "FORBIDDEN",
+          "message": "No tiene permiso para realizar esta acción"
+        }
+      }
+    },
+    {
+      "step": "Emisor A publica sin X-CSRF-Token",
+      "expected": "403 CSRF_INVALID",
+      "observed": "403 CSRF_INVALID",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 403,
+          "code": "CSRF_INVALID",
+          "message": "Token CSRF ausente o inválido"
+        }
+      }
+    },
+    {
+      "step": "Emisor A publica con el token CSRF de otra sesión",
+      "expected": "403 CSRF_INVALID",
+      "observed": "403 CSRF_INVALID",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 403,
+          "code": "CSRF_INVALID",
+          "message": "Token CSRF ausente o inválido"
+        }
+      }
+    },
+    {
+      "step": "Emisor A publica con Origin ajeno",
+      "expected": "403 CSRF_INVALID",
+      "observed": "403 CSRF_INVALID",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 403,
+          "code": "CSRF_INVALID",
+          "message": "Token CSRF ausente o inválido"
+        }
+      }
+    },
+    {
+      "step": "Control positivo: el propietario publica (alerta firmada, semana 2)",
+      "expected": "201 con alerta",
+      "observed": "201 078b5c43-8308-40c0-9b2e-ae140db55722",
+      "result": "OK",
+      "detail": {
+        "alertaId": "078b5c43-8308-40c0-9b2e-ae140db55722"
+      }
+    },
+    {
+      "step": "Auditoría registra PUBLICATION_DENIED y ALERT_PUBLISHED",
+      "expected": "ambas acciones",
+      "observed": "ALERT_PUBLISHED, PUBLICATION_DENIED, PUBLICATION_AUTHORIZED",
+      "result": "OK"
+    }
+  ],
+  "status": "APROBADO"
+}

@@ -1,0 +1,58 @@
+{
+  "id": "P02a",
+  "title": "Usuario anónimo intenta publicar → 401",
+  "base": "http://localhost:3000/api/v1",
+  "startedAt": "2026-10-26T23:34:34.985Z",
+  "finishedAt": "2026-10-26T23:35:41.599Z",
+  "preparation": {
+    "draft": "borrador a7744caf-0154-448e-86f6-84a6856f0fe7 creado por el emisor A"
+  },
+  "steps": [
+    {
+      "step": "Preparación: emisor A crea un borrador (campos de Bolivia)",
+      "expected": "201",
+      "observed": "201",
+      "result": "OK"
+    },
+    {
+      "step": "Anónimo sin token CSRF publica",
+      "expected": "401 UNAUTHENTICATED",
+      "observed": "401 UNAUTHENTICATED",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 401,
+          "code": "UNAUTHENTICATED",
+          "message": "Autenticación requerida"
+        }
+      }
+    },
+    {
+      "step": "Anónimo con token CSRF válido publica",
+      "expected": "401 UNAUTHENTICATED",
+      "observed": "401 UNAUTHENTICATED",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 401,
+          "code": "UNAUTHENTICATED",
+          "message": "Autenticación requerida"
+        }
+      }
+    },
+    {
+      "step": "Anónimo lee el borrador",
+      "expected": "401 UNAUTHENTICATED",
+      "observed": "401 UNAUTHENTICATED",
+      "result": "OK",
+      "detail": {
+        "response": {
+          "statusCode": 401,
+          "code": "UNAUTHENTICATED",
+          "message": "Autenticación requerida"
+        }
+      }
+    }
+  ],
+  "status": "APROBADO"
+}

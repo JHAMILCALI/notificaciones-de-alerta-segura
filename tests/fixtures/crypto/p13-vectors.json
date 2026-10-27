@@ -1,0 +1,131 @@
+{
+  "$comment": "Generado por packages/verification/scripts/generate-p13-vectors.ts con una clave ECDSA P-256 efimera ya descartada. Solo contiene la clave publica y firmas.",
+  "algorithm": {
+    "canonicalization": "JCS RFC 8785",
+    "signature": "ECDSA P-256 / SHA-256",
+    "signatureFormat": "IEEE P1363 (r||s, 64 bytes) en base64url",
+    "kid": "SHA-256 (base64url) de la SPKI DER"
+  },
+  "publicKeyJwk": {
+    "kty": "EC",
+    "crv": "P-256",
+    "x": "6wM5ODAH7ct_BSsaPGvmPCG46syF7BTtBVQ_5UjcXcw",
+    "y": "mT-okvaNxL0ufp2WB5S9H8QsPEnGRiUmcmnlFvim0z4",
+    "kid": "hguE1zhX04U6lFELNMJYNO7W7cK2SPVo8OjUjIUXYrw"
+  },
+  "vectors": [
+    {
+      "id": "alert-basic",
+      "description": "Alerta mínima con claves en orden no alfabético",
+      "document": {
+        "version": 1,
+        "title": "Aviso de lluvias intensas",
+        "severity": "WARNING",
+        "issuedAt": "2026-10-19T14:30:00.000Z",
+        "area": "Cochabamba"
+      },
+      "canonical": "{\"area\":\"Cochabamba\",\"issuedAt\":\"2026-10-19T14:30:00.000Z\",\"severity\":\"WARNING\",\"title\":\"Aviso de lluvias intensas\",\"version\":1}",
+      "sha256Hex": "6679e3c2ebdaa682f12a0dfa65ea52c7527ad8ff561e5c297809c7273e280d53",
+      "signature": "JZxX1gXBZ7SsNQAJc0S5-U0GGuJITchxQixXBvLlx9km37c5gQQSr0G_Rtp5jblkJcmiGlTjvmwPZvPbaGLrcA"
+    },
+    {
+      "id": "alert-unicode",
+      "description": "Unicode: acentos, eñe, euro, emoji (par sustituto) y escapes de control",
+      "document": {
+        "mensaje": "Evacuación inmediata: zona ribereña, niños y mayores primero. 100 € 😀",
+        "detalle": "Línea 1\nLínea 2\t(tab) \"comillas\" \\ barra",
+        "control": "\u0001\u001f",
+        "😀": "clave con emoji",
+        "ñandú": "clave con eñe"
+      },
+      "canonical": "{\"control\":\"\\u0001\\u001f\",\"detalle\":\"Línea 1\\nLínea 2\\t(tab) \\\"comillas\\\" \\\\ barra\",\"mensaje\":\"Evacuación inmediata: zona ribereña, niños y mayores primero. 100 € 😀\",\"ñandú\":\"clave con eñe\",\"😀\":\"clave con emoji\"}",
+      "sha256Hex": "6bfbb0f2f50a0d41d45b53aeb7011776402b739d17573e421a8e4bb7ba2a1aa6",
+      "signature": "HEvNDsguf-yY1u2-26cACRvtlW1Td8_Ufev1-JDebQQeEmbw5t4Y-vpbcSqEj1D535IpK1cC8Jr9dXR1qyG-9w"
+    },
+    {
+      "id": "numbers",
+      "description": "Números JCS: exponentes, decimales, enteros grandes y menos cero",
+      "document": {
+        "numbers": [
+          333333333.3333333,
+          1e+30,
+          4.5,
+          0.002,
+          1e-27,
+          0,
+          0.1,
+          1e+21,
+          123456789012345680000,
+          5e-324
+        ],
+        "integers": [
+          0,
+          1,
+          -1,
+          9007199254740991
+        ]
+      },
+      "canonical": "{\"integers\":[0,1,-1,9007199254740991],\"numbers\":[333333333.3333333,1e+30,4.5,0.002,1e-27,0,0.1,1e+21,123456789012345680000,5e-324]}",
+      "sha256Hex": "cb7f5e9b5c2856b1ae980162f8b952ddba857cef97732decf5b24f98a325d01c",
+      "signature": "ETOErsrmwlBv_m291qSEKqSmMEZbfwo3G8bWF0UqNN00xPq-P0iijIysO1OJzmjZozrqc0mrHvEsmd9Nd8O9oA"
+    },
+    {
+      "id": "nested",
+      "description": "Estructuras anidadas, null, booleanos, arreglos y objetos vacíos",
+      "document": {
+        "z": {
+          "b": [
+            3,
+            2,
+            1
+          ],
+          "a": {
+            "y": null,
+            "x": true
+          }
+        },
+        "a": [],
+        "m": {},
+        "literals": [
+          null,
+          true,
+          false
+        ],
+        "deep": [
+          [
+            {
+              "k2": 2,
+              "k1": 1
+            }
+          ],
+          []
+        ]
+      },
+      "canonical": "{\"a\":[],\"deep\":[[{\"k1\":1,\"k2\":2}],[]],\"literals\":[null,true,false],\"m\":{},\"z\":{\"a\":{\"x\":true,\"y\":null},\"b\":[3,2,1]}}",
+      "sha256Hex": "2b5f921e45e83be7678de3c950265d8497fac535ff954c38ce9c55db69f5b448",
+      "signature": "88HYAUyNMV8ZD-cyR0zpb9aes4zhu2wwxl7WmYIHDgK6YYlgs3kci-XT9s_DhFQhNhJ3UYGpRW_RnY73HVW23A"
+    },
+    {
+      "id": "rfc8785-sample",
+      "description": "Ejemplo de RFC 8785 §3.2.2",
+      "document": {
+        "numbers": [
+          333333333.3333333,
+          1e+30,
+          4.5,
+          0.002,
+          1e-27
+        ],
+        "string": "€$\u000f\nA'B\"\\\\\"/",
+        "literals": [
+          null,
+          true,
+          false
+        ]
+      },
+      "canonical": "{\"literals\":[null,true,false],\"numbers\":[333333333.3333333,1e+30,4.5,0.002,1e-27],\"string\":\"€$\\u000f\\nA'B\\\"\\\\\\\\\\\"/\"}",
+      "sha256Hex": "2d5e01a318d0f0879ab568c4be289c8b1f64ef8921a53c6277d5e069978baacb",
+      "signature": "up-TtqexDRb5h8GfC7Q2aYMZ8GN-KE_Ck0tRfp6Y_FSGRFGp2YzR8yCiWjXv2wvyE4s3sFZPb5Ep8O3qiZlTsg"
+    }
+  ]
+}
